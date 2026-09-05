@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./matchday.css";
 
 export const metadata: Metadata = {
   title: "Spielraum | Bundesliga Forecast Lab",

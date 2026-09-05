@@ -30,10 +30,11 @@ test("server-renders the forecast dashboard", async () => {
   assert.match(html, /Ein Blick in die Glaskugel/);
   assert.match(html, /Das Model\. How it works/);
   assert.match(html, /F.r Nerds/);
-  assert.match(html, /pitch-art/);
-  assert.match(html, /pitch-player/);
-  assert.match(html, /pass-line/);
-  assert.match(html, /pitch-art__annotations/);
+  assert.match(html, /hero-forecast/);
+  assert.match(html, /Erste Begegnung des Spieltags/);
+  assert.match(html, /1 · Heim/);
+  assert.match(html, /X · Remis/);
+  assert.match(html, /2 · Gast/);
   assert.doesNotMatch(html, /LIVE MODEL SPACE|Ein Pass ist passiert/);
   assert.doesNotMatch(html, /PHASE 03|48\.137|11\.575/);
   assert.match(html, /model-signal__orbit/);
