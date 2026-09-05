@@ -1,0 +1,38 @@
+{
+  "seasons": [
+    "2015/16",
+    "2016/17",
+    "2017/18",
+    "2018/19",
+    "2019/20",
+    "2020/21",
+    "2021/22",
+    "2022/23",
+    "2023/24",
+    "2024/25",
+    "2025/26"
+  ],
+  "budget": "screen",
+  "mcmc_budget": {
+    "prior_iter": 1500,
+    "prior_burnin": 300,
+    "base_iter": 1000,
+    "base_burnin": 200,
+    "warm_iter": 500,
+    "warm_burnin": 100,
+    "thin": 10
+  },
+  "summer_variance_scales": [
+    0.5,
+    1.0,
+    2.0
+  ],
+  "xg_source": "Understat real xG",
+  "continuous_xg": true,
+  "phi": 5.0,
+  "tau": 100.0,
+  "gamma": 0.1,
+  "epsilon": 0.2,
+  "market_kappa": 0.1,
+  "selection": "rolling origin; prior seasons only"
+}

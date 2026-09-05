@@ -39,12 +39,15 @@ import time
 import unicodedata
 import urllib.request
 from dataclasses import dataclass
+from datetime import date
+import os
 from pathlib import Path
+import tempfile
 
 import numpy as np
 import pandas as pd
 
-DEFAULT_CSV = "data_cache/transfermarkt_squad_values.csv"
+DEFAULT_CSV = Path(__file__).parent / "data_cache" / "transfermarkt_squad_values.csv"
 _REQUIRED_COLS = {"Season", "ClubTM", "MarketValueEUR"}
 
 _UA = {"User-Agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -80,6 +83,10 @@ SEASONS: list[SeasonConfig] = [
     SeasonConfig("2024/25", 2024, "2024-08-23", "2024-08-15"),
     SeasonConfig("2025/26", 2025, "2025-08-22", "2025-08-15"),
 ]
+
+# Einziger regulär erlaubter neuer Abruf. Historische Saisons liegen bereits
+# im Cache und werden von der Portfolio-Pipeline nicht noch einmal angefragt.
+CURRENT_SEASON = SeasonConfig("2026/27", 2026, "2026-08-28", "2026-08-15")
 
 
 # ─────────────────────────────────────────────────────────────────────
@@ -127,6 +134,8 @@ _TM_TO_FD: dict[str, str] = {
     _norm("DSC Arminia Bielefeld"):      "Bielefeld",
     _norm("SpVgg Greuther Furth"):       "Greuther Furth",
     _norm("Holstein Kiel"):              "Holstein Kiel",
+    _norm("SV Elversberg"):              "Elversberg",
+    _norm("SV 07 Elversberg"):           "Elversberg",
 }
 
 
@@ -217,7 +226,12 @@ def _cutoff_values(cutoff_date: str) -> dict[str, float]:
 
 def fetch_and_cache(csv_path: str | Path = DEFAULT_CSV,
                     force: bool = False) -> pd.DataFrame:
-    """Scrapt alle Saisons leak-frei (Stichtag) und schreibt den Cache."""
+    """Legacy-Vollabruf für reproduzierbare Forschungsläufe.
+
+    Für den laufenden Betrieb immer :func:`fetch_current_season_only` nutzen;
+    nur diese Funktion garantiert, dass historische Seiten nie neu geladen
+    und bestehende Cache-Zeilen nicht verändert werden.
+    """
     path = Path(csv_path)
     if path.exists() and not force:
         print(f"  Cache existiert: {path} (force=True zum Neuladen)")
@@ -248,6 +262,88 @@ def fetch_and_cache(csv_path: str | Path = DEFAULT_CSV,
     if misses:
         print(f"  ⚠ Ohne Stichtag-Wert (heute < 3. Liga?): {misses}")
     return df
+
+
+def fetch_current_season_only(
+    csv_path: str | Path = DEFAULT_CSV,
+    *,
+    force: bool = False,
+    allow_before_cutoff: bool = False,
+    as_of_date: str | None = None,
+) -> pd.DataFrame:
+    """Ergänzt ausschließlich die 2026/27-Marktwerte atomar im Cache.
+
+    Standardmäßig ist ein Abruf erst am leak-freien Stichtag erlaubt. Ein
+    expliziter Vorab-Test kann ``allow_before_cutoff=True`` verwenden. Dann
+    wird standardmäßig der heutige Stichtag verwendet. Der Abruf bleibt
+    strikt auf season_id 2026 und die 2026/27-Zeilen begrenzt.
+    """
+    path = Path(csv_path)
+    if not path.exists():
+        raise FileNotFoundError(
+            f"Historischer Cache fehlt: {path}. Der 2026-only-Abruf legt "
+            "bewusst keinen neuen historischen Cache an."
+        )
+    existing = load_market_values(path)
+    current = existing[existing["Season"] == CURRENT_SEASON.season]
+    if len(current) == 18 and not force:
+        print(f"  {CURRENT_SEASON.season} bereits vollständig im Cache: {path}")
+        return existing
+
+    cutoff = date.fromisoformat(CURRENT_SEASON.cutoff_date)
+    requested_date = date.fromisoformat(as_of_date) if as_of_date else None
+    if requested_date and requested_date > date.today():
+        raise ValueError("as_of_date darf nicht in der Zukunft liegen")
+    if date.today() < cutoff and not allow_before_cutoff:
+        raise RuntimeError(
+            f"2026/27 wird erst am leak-freien Stichtag {cutoff.isoformat()} "
+            "abgerufen (für einen bewusst vorläufigen Test: allow_before_cutoff=True)."
+        )
+
+    effective_date = requested_date or (
+        date.today() if allow_before_cutoff and date.today() < cutoff else cutoff
+    )
+    if effective_date < cutoff and not allow_before_cutoff:
+        raise RuntimeError(f"Vorab-Stichtag {effective_date.isoformat()} ist nicht freigegeben")
+
+    participants = _participants(CURRENT_SEASON.season_id)
+    if len(participants) != 18:
+        raise RuntimeError(
+            f"Abbruch ohne Cache-Änderung: für 2026/27 wurden {len(participants)} statt 18 Clubs gefunden."
+        )
+    values = _cutoff_values(effective_date.isoformat())
+    rows = []
+    missing = []
+    for club_id, name in participants.items():
+        value = values.get(club_id)
+        if value is None:
+            missing.append((name, club_id))
+        else:
+            rows.append({
+                "Season": CURRENT_SEASON.season,
+                "ClubTM": name,
+                "MarketValueEUR": value,
+                "AsOfDate": effective_date.isoformat(),
+            })
+    if missing or len(rows) != 18:
+        raise RuntimeError(f"Abbruch ohne Cache-Änderung: fehlende 2026/27-Werte: {missing}")
+
+    preserved = existing[existing["Season"] != CURRENT_SEASON.season].copy()
+    combined = pd.concat([preserved, pd.DataFrame(rows)], ignore_index=True)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, temporary = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=path.parent)
+    os.close(fd)
+    try:
+        combined.to_csv(temporary, index=False, encoding="utf-8")
+        os.replace(temporary, path)
+    except Exception:
+        Path(temporary).unlink(missing_ok=True)
+        raise
+    print(
+        f"  OK: Nur {CURRENT_SEASON.season} zum Stichtag {effective_date.isoformat()} ergänzt; "
+        f"{len(preserved)} historische Zeilen unverändert übernommen."
+    )
+    return combined
 
 
 # ─────────────────────────────────────────────────────────────────────
@@ -312,7 +408,8 @@ if __name__ == "__main__":
     except (AttributeError, OSError):
         pass
     force = "--force" in sys.argv
-    df = fetch_and_cache(force=force)
+    early = "--allow-before-cutoff" in sys.argv
+    df = fetch_current_season_only(force=force, allow_before_cutoff=early)
     print("\n  Abdeckung & Namens-Mapping:")
     unmapped = set()
     for s in sorted(df["Season"].unique()):

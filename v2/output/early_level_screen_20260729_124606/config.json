@@ -1,0 +1,30 @@
+{
+  "seasons": [
+    "2023/24"
+  ],
+  "budget": "screen",
+  "mcmc_budget": {
+    "prior_iter": 5000,
+    "prior_burnin": 1000,
+    "base_iter": 3000,
+    "base_burnin": 600,
+    "warm_iter": 1500,
+    "warm_burnin": 250,
+    "thin": 10
+  },
+  "level_prior_matches": [
+    0.0,
+    18.0,
+    72.0,
+    Infinity
+  ],
+  "workers": 1,
+  "evaluation_matchdays": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "xg_source": "Understat real xG"
+}

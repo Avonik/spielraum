@@ -1,0 +1,34 @@
+{
+  "seasons": [
+    "2025/26"
+  ],
+  "budget": "screen",
+  "mcmc_budget": {
+    "prior_iter": 1500,
+    "prior_burnin": 300,
+    "base_iter": 1000,
+    "base_burnin": 200,
+    "warm_iter": 500,
+    "warm_burnin": 100,
+    "thin": 10
+  },
+  "summer_variance_scales": [
+    1.0
+  ],
+  "xg_source": "Understat real xG",
+  "continuous_xg": true,
+  "phi": 5.0,
+  "tau": 100.0,
+  "gamma": 0.1,
+  "epsilon": 0.2,
+  "market_kappa": 0.1,
+  "selection": "rolling origin; prior seasons only",
+  "production_policy": {
+    "summer_variance_scale": 1.0,
+    "carry_full_through_matchday": 12,
+    "carry_cosine_fade_to_zero_at_matchday": 18
+  },
+  "season_workers": 1,
+  "goal_level_prior_matches": 144.0,
+  "goal_level_prior_fade_matches": null
+}

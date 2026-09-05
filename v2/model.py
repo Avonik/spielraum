@@ -90,12 +90,16 @@ class League:
     gamma: float = DEFAULT_GAMMA
     epsilon: float = DEFAULT_EPSILON
     phi: float = DEFAULT_PHI          # xG-Präzision (nur bei continuous_obs)
+    early_process_multiplier: float = 1.0
+    early_process_half_life: float = 6.0
 
     # --- Informativer Prior (optional) --------------------------------
-    init_prior_mean: np.ndarray | None = None   # shape (n_teams,): Prior-Mittel
-                                                # der Initial-Stärke je Team
-                                                # (κ·z(log Marktwert)). None/zeros
-                                                # ⇒ klassischer N(0,σ²)-Prior.
+    init_prior_mean: np.ndarray | None = None   # legacy/common market-value mean
+    init_attack_prior_mean: np.ndarray | None = None  # shape (n_teams,)
+    init_defense_prior_mean: np.ndarray | None = None # shape (n_teams,)
+    init_prior_var: np.ndarray | None = None           # shape (n_teams,)
+    init_attack_prior_var: np.ndarray | None = None    # shape (n_teams,)
+    init_defense_prior_var: np.ndarray | None = None   # shape (n_teams,)
 
     # --- xG-Felder (optional) -----------------------------------------
     xg_home: np.ndarray | None = None
@@ -113,6 +117,59 @@ class League:
         return int(self.home_idx.shape[0])
 
 
+def compose_initial_prior_means(
+    teams: list[str],
+    *,
+    team_values: dict | None = None,
+    market_kappa: float = 0.0,
+    team_strength_priors: dict[str, tuple[float, float]] | None = None,
+    carry_weight: float = 1.0,
+    team_strength_adjustments: dict[str, tuple[float, float]] | None = None,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Compose centered attack/defense season-start prior means.
+
+    The market-value term is shared by attack and defense; carried strengths
+    retain their separate components. Missing promoted teams therefore fall
+    back to the market term (or league average when no value is available).
+    """
+    n_teams = len(teams)
+    t2i = {team: i for i, team in enumerate(teams)}
+    market_prior = np.zeros(n_teams, dtype=np.float64)
+    if team_values is not None and market_kappa != 0.0:
+        raw = np.array([team_values.get(t, np.nan) for t in teams],
+                       dtype=np.float64)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            logv = np.log(raw)
+        mask = np.isfinite(logv)
+        if int(mask.sum()) >= 2:
+            mu = float(logv[mask].mean())
+            sd = float(logv[mask].std())
+            if sd > 0.0:
+                market_prior[mask] = market_kappa * (logv[mask] - mu) / sd
+
+    attack_prior = market_prior.copy()
+    defense_prior = market_prior.copy()
+    if team_strength_priors is not None and carry_weight != 0.0:
+        for team, idx in t2i.items():
+            prior = team_strength_priors.get(team)
+            if prior is None:
+                continue
+            attack_prior[idx] += carry_weight * float(prior[0])
+            defense_prior[idx] += carry_weight * float(prior[1])
+    if team_strength_adjustments is not None:
+        for team, idx in t2i.items():
+            adjustment = team_strength_adjustments.get(team)
+            if adjustment is None:
+                continue
+            attack_prior[idx] += float(adjustment[0])
+            defense_prior[idx] += float(adjustment[1])
+
+    prior_level = float(np.mean(np.r_[attack_prior, defense_prior]))
+    attack_prior -= prior_level
+    defense_prior -= prior_level
+    return attack_prior, defense_prior, market_prior
+
+
 def build_league(df: pd.DataFrame,
                  use_xg: bool = False,
                  tau: float = DEFAULT_TAU,
@@ -121,7 +178,17 @@ def build_league(df: pd.DataFrame,
                  continuous_xg: bool = False,
                  phi: float = DEFAULT_PHI,
                  team_values: dict | None = None,
-                 market_kappa: float = 0.0) -> League:
+                 market_kappa: float = 0.0,
+                 team_strength_priors: dict[str, tuple[float, float]] | None = None,
+                 carry_weight: float = 1.0,
+                 team_strength_adjustments: dict[str, tuple[float, float]] | None = None,
+                 initial_prior_var: float | dict[str, float] = PRIOR_VAR,
+                 initial_attack_prior_var: float | dict[str, float] | None = None,
+                 initial_defense_prior_var: float | dict[str, float] | None = None,
+                 c_x_override: float | None = None,
+                 c_y_override: float | None = None,
+                 early_process_multiplier: float = 1.0,
+                 early_process_half_life: float = 6.0) -> League:
     """Baut die League-Struktur aus dem Spiele-DataFrame.
 
     Wenn ``use_xg=True`` und die Spalten ``xG_home`` / ``xG_away`` vorhanden
@@ -133,6 +200,13 @@ def build_league(df: pd.DataFrame,
     nutzt ein Gamma-Beobachtungsmodell (Präzision ``phi``) statt der
     Trunc-Poisson·Dixon-Coles-PMF. Die Vorhersage bleibt davon unberührt
     (weiterhin diskretes Poisson-Gitter).
+
+    ``team_strength_priors`` enthält getrennte (Angriff, Abwehr)-Mittelwerte
+    aus der Vorsaison. ``carry_weight`` schrumpft sie zum Ligamittel; ein
+    Marktwert-Prior wird additiv kombiniert. Mit ``initial_prior_var`` kann
+    die Sommerunsicherheit je Team verbreitert werden. Die beiden c-Overrides
+    halten das globale Torniveau früh in der Saison auf einer historischen,
+    leckfreien Basis stabil.
     """
     df = df.copy().sort_values("Date").reset_index(drop=True)
 
@@ -207,23 +281,56 @@ def build_league(df: pd.DataFrame,
         c_x = float(np.log(home_goals.mean()))
         c_y = float(np.log(away_goals.mean()))
 
+    if c_x_override is not None:
+        c_x = float(c_x_override)
+    if c_y_override is not None:
+        c_y = float(c_y_override)
+
     # Informativer Prior aus Marktwerten (Option A):
     # Prior-Mittel der Initial-Stärke je Team = market_kappa · z(log Marktwert),
     # z-standardisiert über die Teams DIESER Liga (Σ≈0 → kompatibel mit der
     # Sum-to-Zero-Projektion im MCMC-Kern). Fehlende/≤0-Werte ⇒ 0 (0-Prior).
     # market_kappa=0 oder team_values=None ⇒ Nullvektor ⇒ bisheriges Verhalten.
-    init_prior_mean = np.zeros(n_teams, dtype=np.float64)
-    if team_values is not None and market_kappa != 0.0:
-        raw = np.array([team_values.get(t, np.nan) for t in teams],
-                       dtype=np.float64)
-        with np.errstate(divide="ignore", invalid="ignore"):
-            logv = np.log(raw)
-        mask = np.isfinite(logv)
-        if int(mask.sum()) >= 2:
-            mu = float(logv[mask].mean())
-            sd = float(logv[mask].std())
-            if sd > 0.0:
-                init_prior_mean[mask] = market_kappa * (logv[mask] - mu) / sd
+    (init_attack_prior_mean,
+     init_defense_prior_mean,
+     init_prior_mean) = compose_initial_prior_means(
+        teams,
+        team_values=team_values,
+        market_kappa=market_kappa,
+        team_strength_priors=team_strength_priors,
+        carry_weight=carry_weight,
+        team_strength_adjustments=team_strength_adjustments,
+    )
+
+    def _prior_variance_array(value, fallback) -> np.ndarray:
+        if value is None:
+            return fallback.copy()
+        if isinstance(value, dict):
+            return np.array(
+                [float(value.get(t, fallback[i])) for i, t in enumerate(teams)],
+                dtype=np.float64,
+            )
+        return np.full(n_teams, float(value), dtype=np.float64)
+
+    if isinstance(initial_prior_var, dict):
+        init_prior_var = np.array(
+            [float(initial_prior_var.get(t, PRIOR_VAR)) for t in teams],
+            dtype=np.float64,
+        )
+    else:
+        init_prior_var = np.full(n_teams, float(initial_prior_var),
+                                 dtype=np.float64)
+    init_attack_prior_var = _prior_variance_array(
+        initial_attack_prior_var, init_prior_var)
+    init_defense_prior_var = _prior_variance_array(
+        initial_defense_prior_var, init_prior_var)
+    for name, values in [
+        ("initial_prior_var", init_prior_var),
+        ("initial_attack_prior_var", init_attack_prior_var),
+        ("initial_defense_prior_var", init_defense_prior_var),
+    ]:
+        if np.any(~np.isfinite(values)) or np.any(values <= 0.0):
+            raise ValueError(f"{name} must be finite and > 0.")
 
     return League(
         teams=teams,
@@ -240,7 +347,14 @@ def build_league(df: pd.DataFrame,
         match_home_local=match_home_local,
         match_away_local=match_away_local,
         tau=tau, gamma=gamma, epsilon=epsilon, phi=phi,
+        early_process_multiplier=early_process_multiplier,
+        early_process_half_life=early_process_half_life,
         init_prior_mean=init_prior_mean,
+        init_attack_prior_mean=init_attack_prior_mean,
+        init_defense_prior_mean=init_defense_prior_mean,
+        init_prior_var=init_prior_var,
+        init_attack_prior_var=init_attack_prior_var,
+        init_defense_prior_var=init_defense_prior_var,
         xg_home=xg_home, xg_away=xg_away, use_xg=use_xg,
         continuous_obs=continuous_obs,
     )

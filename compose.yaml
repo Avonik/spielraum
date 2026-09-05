@@ -1,0 +1,64 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: docker/python.Dockerfile
+      target: api
+    restart: unless-stopped
+    environment:
+      SPIELRAUM_DATA_DIR: /data
+      SPIELRAUM_SEED_PREVIEW: ${SPIELRAUM_SEED_PREVIEW:-true}
+    volumes:
+      - ./runtime:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: docker/python.Dockerfile
+      target: worker
+    restart: unless-stopped
+    command: ["python", "-m", "spielraum.scheduler"]
+    environment:
+      SPIELRAUM_DATA_DIR: /data
+      SPIELRAUM_RESULTS_COMMAND: ${SPIELRAUM_RESULTS_COMMAND:-python -m spielraum.adapters.results_openligadb --season 2026}
+      SPIELRAUM_MODEL_COMMAND: ${SPIELRAUM_MODEL_COMMAND:-python -m spielraum.adapters.model_v2 --season 2026}
+      SPIELRAUM_SIMULATIONS: ${SPIELRAUM_SIMULATIONS:-50000}
+      SPIELRAUM_MCMC_ITER: ${SPIELRAUM_MCMC_ITER:-5000}
+      SPIELRAUM_MCMC_BURNIN: ${SPIELRAUM_MCMC_BURNIN:-1000}
+      SPIELRAUM_MCMC_THIN: ${SPIELRAUM_MCMC_THIN:-10}
+      SPIELRAUM_ALLOW_EARLY_MARKET_VALUES: ${SPIELRAUM_ALLOW_EARLY_MARKET_VALUES:-true}
+    volumes:
+      - ./runtime:/data
+
+  web:
+    build:
+      context: web
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+
+  caddy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+
+volumes:
+  caddy_data:
+  caddy_config:

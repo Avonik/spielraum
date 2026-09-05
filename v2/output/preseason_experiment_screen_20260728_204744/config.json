@@ -1,0 +1,33 @@
+{
+  "stage": "screen",
+  "seasons": [
+    "2018/19",
+    "2019/20",
+    "2020/21",
+    "2021/22"
+  ],
+  "configs": [
+    "carry75",
+    "carry50",
+    "level_all10",
+    "delta05",
+    "delta10",
+    "early2",
+    "delta05_early2"
+  ],
+  "budget": "screen",
+  "mcmc_budget": {
+    "prior_iter": 1200,
+    "prior_burnin": 250,
+    "base_iter": 800,
+    "base_burnin": 180,
+    "warm_iter": 350,
+    "warm_burnin": 70,
+    "thin": 10
+  },
+  "xg_source": "football-data shot proxy",
+  "xg_weights": {
+    "off_target": 0.004447726275251296,
+    "on_target": 0.27981249890861903
+  }
+}

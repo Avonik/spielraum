@@ -1,0 +1,132 @@
+{
+  "target_season": "2026/27",
+  "source_season": "2025/26",
+  "teams": [
+    "Augsburg",
+    "Bayern Munich",
+    "Dortmund",
+    "Ein Frankfurt",
+    "Elversberg",
+    "FC Koln",
+    "Freiburg",
+    "Hamburg",
+    "Hoffenheim",
+    "Leverkusen",
+    "M'gladbach",
+    "Mainz",
+    "Paderborn",
+    "RB Leipzig",
+    "Schalke 04",
+    "Stuttgart",
+    "Union Berlin",
+    "Werder Bremen"
+  ],
+  "source_strengths": {
+    "Augsburg": [
+      0.057145289229084704,
+      -0.17982952314048364
+    ],
+    "Bayern Munich": [
+      0.5971300618928751,
+      0.31290184026042406
+    ],
+    "Dortmund": [
+      0.044787588035299856,
+      0.28668122214428204
+    ],
+    "Ein Frankfurt": [
+      -0.030156945815588265,
+      -0.0086719402693452
+    ],
+    "FC Koln": [
+      -0.012353790591739258,
+      0.11057619667669889
+    ],
+    "Freiburg": [
+      -0.1599775098737311,
+      -0.02566939898632597
+    ],
+    "Hamburg": [
+      -0.05614981714947787,
+      -0.02564700678333296
+    ],
+    "Heidenheim": [
+      -0.4011310881372349,
+      -0.23114683416595608
+    ],
+    "Hoffenheim": [
+      0.2891922262208441,
+      -0.07235486232031299
+    ],
+    "Leverkusen": [
+      0.12935485048144058,
+      -0.09562062097724677
+    ],
+    "M'gladbach": [
+      -0.26865447976105283,
+      -0.1668079899481529
+    ],
+    "Mainz": [
+      -0.00638273059250144,
+      -0.0851348340389188
+    ],
+    "RB Leipzig": [
+      0.2998073793391706,
+      0.11010530099137211
+    ],
+    "St Pauli": [
+      -0.4969623042554749,
+      -0.22717189151934003
+    ],
+    "Stuttgart": [
+      0.3579852674519348,
+      -0.13566659082259983
+    ],
+    "Union Berlin": [
+      -0.22657220745481624,
+      0.2068283711130994
+    ],
+    "Werder Bremen": [
+      -0.11433634157347881,
+      -0.09441359642898878
+    ],
+    "Wolfsburg": [
+      0.013505621937549162,
+      0.004390336595149986
+    ]
+  },
+  "carried_teams": [
+    "Augsburg",
+    "Bayern Munich",
+    "Dortmund",
+    "Ein Frankfurt",
+    "FC Koln",
+    "Freiburg",
+    "Hamburg",
+    "Hoffenheim",
+    "Leverkusen",
+    "M'gladbach",
+    "Mainz",
+    "RB Leipzig",
+    "Stuttgart",
+    "Union Berlin",
+    "Werder Bremen"
+  ],
+  "new_teams": [
+    "Elversberg",
+    "Paderborn",
+    "Schalke 04"
+  ],
+  "c_x": 0.4707138177588615,
+  "c_y": 0.24578673686905486,
+  "carry_weight": 0.75,
+  "market_kappa": 0.1,
+  "summer_prior_var": 0.10810810810810811,
+  "new_team_prior_var": 0.24324324324324326,
+  "use_xg": true,
+  "continuous_xg": true,
+  "phi": 5.0,
+  "tau": 100.0,
+  "gamma": 0.1,
+  "epsilon": 0.2
+}

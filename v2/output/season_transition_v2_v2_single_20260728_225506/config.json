@@ -1,0 +1,26 @@
+{
+  "seasons": [
+    "2025/26"
+  ],
+  "budget": "v2_single",
+  "mcmc_budget": {
+    "prior_iter": 40000,
+    "prior_burnin": 8000,
+    "base_iter": 40000,
+    "base_burnin": 8000,
+    "warm_iter": 20000,
+    "warm_burnin": 3000,
+    "thin": 10
+  },
+  "summer_variance_scales": [
+    1.0
+  ],
+  "xg_source": "Understat real xG",
+  "continuous_xg": true,
+  "phi": 5.0,
+  "tau": 100.0,
+  "gamma": 0.1,
+  "epsilon": 0.2,
+  "market_kappa": 0.1,
+  "selection": "rolling origin; prior seasons only"
+}

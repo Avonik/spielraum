@@ -1,0 +1,5 @@
+candidate,config,strategy,phase,n,rps
+level_all10_early2:updating_prior,level_all10_early2,updating_prior,full_season,1224,0.21431436483529182
+level_all10_early2:updating_prior,level_all10_early2,updating_prior,matchdays_18_34,612,0.21572935762834927
+level_all10_early2:updating_prior,level_all10_early2,updating_prior,matchdays_1_5,180,0.1979691287585555
+level_all10_early2:updating_prior,level_all10_early2,updating_prior,matchdays_6_17,432,0.21912030674376717

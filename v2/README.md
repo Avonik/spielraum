@@ -108,9 +108,32 @@ bundesliga_pipeline/
 
 ## Bekannte Einschränkungen
 
-- MCMC ist in reinem Python implementiert; auf großen Saisons ist es langsam. Für Produktionscode würde man Numba / Cython / JAX nutzen.
+- Der MCMC-Innenkern ist mit Numba zu Maschinencode kompiliert. Mehrsaison-Backtests können zusätzlich mit `--workers N` auf mehrere Prozesse verteilt werden.
 - Pre-Promotion-Teams (aufsteigende Mannschaften) bekommen den Standard-Prior; mit Vor-Saison-Daten könnte man hier besser starten.
 - `EPSILON = 0.2`, `TAU = 100`, `GAMMA = 0.1` sind die Paper-Werte. Für eine andere Liga wären eigene Schätzungen sinnvoll (Grid Search über die Pseudolikelihood, siehe Paper §3.2).
+
+## Saisonstart 2026/27
+
+Die neue Preseason-Pipeline führt zwei strukturell identische V2-Streams:
+`carry_v2` übernimmt den Posterior der Vorsaison, `fresh_v2` startet nur mit
+dem aktuellen Kaderwertprior. Das globale Heim-/Auswärts-xG-Niveau wird mit
+144 historischen Pseudospielen stabilisiert, damit einzelne Freitagsspiele
+nicht das gesamte erste Wochenende verzerren. Carry gilt voll bis Spieltag 12,
+wird bis Spieltag 18 weich ausgeblendet und ist danach exakt null.
+Die fertigen Standardwahrscheinlichkeiten stehen in den
+`p_*_recommended_v2`-Spalten; separate Fresh-/Carry-Spalten bleiben für
+Diagnose und weitere Experimente erhalten.
+
+```powershell
+uv run python v2/forecast_2026_27.py
+uv run python v2/preseason_backtest.py --output-root v2/output
+```
+
+Details, Strategievergleich und Output-Dateien stehen in
+[`PRESEASON_FORECAST.md`](PRESEASON_FORECAST.md).
+Die zeitlich getrennten Screening-/Bestätigungsergebnisse und der empfohlene
+Soft-Blend stehen in
+[`PRESEASON_EXPERIMENT_RESULTS.md`](PRESEASON_EXPERIMENT_RESULTS.md).
 
 ## Quelle
 

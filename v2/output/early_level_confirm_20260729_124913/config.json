@@ -1,0 +1,41 @@
+{
+  "seasons": [
+    "2015/16",
+    "2016/17",
+    "2017/18",
+    "2018/19",
+    "2019/20",
+    "2020/21",
+    "2021/22",
+    "2022/23",
+    "2023/24",
+    "2024/25",
+    "2025/26"
+  ],
+  "budget": "confirm",
+  "mcmc_budget": {
+    "prior_iter": 15000,
+    "prior_burnin": 3000,
+    "base_iter": 10000,
+    "base_burnin": 2000,
+    "warm_iter": 5000,
+    "warm_burnin": 800,
+    "thin": 10
+  },
+  "level_prior_matches": [
+    0.0,
+    36.0,
+    72.0,
+    144.0,
+    Infinity
+  ],
+  "workers": 2,
+  "evaluation_matchdays": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "xg_source": "Understat real xG"
+}

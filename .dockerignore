@@ -1,0 +1,17 @@
+.git
+.idea
+.agents
+.claude
+.venv
+.uv-cache*
+__pycache__
+**/__pycache__
+**/*.pyc
+outputs
+v1/output
+v2/output
+web/node_modules
+web/.npm-cache
+web/.vinext
+web/dist
+runtime*

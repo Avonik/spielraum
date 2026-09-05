@@ -1,0 +1,25 @@
+{
+  "seasons": [
+    "2022/23",
+    "2023/24",
+    "2024/25"
+  ],
+  "carry_weight": 0.75,
+  "market_kappa": 0.1,
+  "reset_after_games": 153,
+  "xg_source": "football-data shot proxy",
+  "xg_weights": {
+    "off_target": 0.002800252813927396,
+    "on_target": 0.2914060013601219
+  },
+  "mcmc_budget": {
+    "prior_iter": 2500,
+    "prior_burnin": 500,
+    "base_iter": 1400,
+    "base_burnin": 300,
+    "warm_iter": 700,
+    "warm_burnin": 150,
+    "thin": 10
+  },
+  "mode": "quick"
+}

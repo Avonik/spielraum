@@ -48,6 +48,12 @@ _LOG_FACT = np.array([
 ], dtype=np.float64)
 
 
+@njit(cache=True)
+def _seed_numba_rng(seed):
+    """Seed Numba's RNG (separate from NumPy's Python-side RNG)."""
+    np.random.seed(seed)
+
+
 # ─────────────────────────────────────────────────────────────────────
 # Numba-kompilierte Hilfsfunktionen
 # ─────────────────────────────────────────────────────────────────────
@@ -160,8 +166,8 @@ def _match_loglik(
 
 
 @njit(cache=True, fastmath=True)
-def _time_prior_logpdf(val, prev_val, dt, sigma2, tau):
-    var = dt / tau * sigma2
+def _time_prior_logpdf(val, prev_val, dt, sigma2, tau, variance_scale):
+    var = dt / tau * sigma2 * variance_scale
     if var < 1e-9:
         var = 1e-9
     diff = val - prev_val
@@ -189,7 +195,11 @@ def _run_chunk(
     obs_x, obs_y,
     # Hyperparameter
     c_x, c_y, gamma, epsilon, tau, sigma2,
-    init_prior_mean,         # shape (n_teams,): Prior-Mittel der Initial-Stärke
+    early_process_multiplier, early_process_half_life,
+    init_attack_prior_mean,
+    init_defense_prior_mean,
+    init_attack_prior_var,
+    init_defense_prior_var,
     max_k,
     continuous, phi,
     proposal_sd,
@@ -245,11 +255,17 @@ def _run_chunk(
                     # Prior aus vorherigem Spiel
                     log_alpha = 0.0
                     if local == 0:
-                        # Initial-Stärke: informativer Prior um init_prior_mean[team]
-                        # (Marktwert-Baseline; 0 ⇒ klassischer 0-Prior).
-                        mu0 = init_prior_mean[team]
-                        log_alpha += _initial_prior_logpdf(proposed, mu0, sigma2)
-                        log_alpha -= _initial_prior_logpdf(current, mu0, sigma2)
+                        # Initial strength: separate attack/defense season prior.
+                        if which == 0:
+                            mu0 = init_attack_prior_mean[team]
+                        else:
+                            mu0 = init_defense_prior_mean[team]
+                        if which == 0:
+                            sigma2_init = init_attack_prior_var[team]
+                        else:
+                            sigma2_init = init_defense_prior_var[team]
+                        log_alpha += _initial_prior_logpdf(proposed, mu0, sigma2_init)
+                        log_alpha -= _initial_prior_logpdf(current, mu0, sigma2_init)
                     else:
                         prev_idx = gidx - 1
                         dt = days_this - strength_days[prev_idx]
@@ -257,10 +273,14 @@ def _run_chunk(
                             prev_val = attack_flat[prev_idx]
                         else:
                             prev_val = defense_flat[prev_idx]
+                        scale = 1.0
+                        if early_process_multiplier != 1.0 and early_process_half_life > 0.0:
+                            scale += (early_process_multiplier - 1.0) * np.exp(
+                                -(local - 1.0) / early_process_half_life)
                         log_alpha += _time_prior_logpdf(proposed, prev_val,
-                                                       dt, sigma2, tau)
+                                                       dt, sigma2, tau, scale)
                         log_alpha -= _time_prior_logpdf(current, prev_val,
-                                                       dt, sigma2, tau)
+                                                       dt, sigma2, tau, scale)
 
                     # Prior zum nächsten Spiel
                     if local < n_local - 1:
@@ -270,10 +290,14 @@ def _run_chunk(
                             next_val = attack_flat[next_idx]
                         else:
                             next_val = defense_flat[next_idx]
+                        scale2 = 1.0
+                        if early_process_multiplier != 1.0 and early_process_half_life > 0.0:
+                            scale2 += (early_process_multiplier - 1.0) * np.exp(
+                                -local / early_process_half_life)
                         log_alpha += _time_prior_logpdf(next_val, proposed,
-                                                       dt2, sigma2, tau)
+                                                       dt2, sigma2, tau, scale2)
                         log_alpha -= _time_prior_logpdf(next_val, current,
-                                                       dt2, sigma2, tau)
+                                                       dt2, sigma2, tau, scale2)
 
                     # Likelihood (nur das betroffene Spiel)
                     old_ll = _match_loglik(
@@ -412,6 +436,7 @@ def run_mcmc(L: League, n_iter: int = 5000, burnin: int = 1000,
             Indikatoren (shape ``(n_matches,)``).
     """
     np.random.seed(seed)
+    _seed_numba_rng(seed)
 
     n_total = int(L.team_start[-1])
     attack_flat = np.zeros(n_total, dtype=np.float64)
@@ -425,10 +450,32 @@ def run_mcmc(L: League, n_iter: int = 5000, burnin: int = 1000,
         delta[:] = np.asarray(init_delta, dtype=np.int64)
 
     # Informativer Prior (Marktwert-Baseline); None ⇒ Nullvektor ⇒ 0-Prior.
-    if getattr(L, "init_prior_mean", None) is not None:
-        init_prior_mean = np.ascontiguousarray(L.init_prior_mean, dtype=np.float64)
-    else:
-        init_prior_mean = np.zeros(L.n_teams, dtype=np.float64)
+    legacy_prior = getattr(L, "init_prior_mean", None)
+    if legacy_prior is None:
+        legacy_prior = np.zeros(L.n_teams, dtype=np.float64)
+    attack_prior = getattr(L, "init_attack_prior_mean", None)
+    defense_prior = getattr(L, "init_defense_prior_mean", None)
+    init_attack_prior_mean = np.ascontiguousarray(
+        legacy_prior if attack_prior is None else attack_prior,
+        dtype=np.float64,
+    )
+    init_defense_prior_mean = np.ascontiguousarray(
+        legacy_prior if defense_prior is None else defense_prior,
+        dtype=np.float64,
+    )
+    prior_var = getattr(L, "init_prior_var", None)
+    if prior_var is None:
+        prior_var = np.full(L.n_teams, PRIOR_VAR, dtype=np.float64)
+    attack_prior_var = getattr(L, "init_attack_prior_var", None)
+    defense_prior_var = getattr(L, "init_defense_prior_var", None)
+    init_attack_prior_var = np.ascontiguousarray(
+        prior_var if attack_prior_var is None else attack_prior_var,
+        dtype=np.float64,
+    )
+    init_defense_prior_var = np.ascontiguousarray(
+        prior_var if defense_prior_var is None else defense_prior_var,
+        dtype=np.float64,
+    )
 
     # Sample-Buffer-Größe vorab bestimmen
     n_post = max(0, n_iter - burnin)
@@ -455,7 +502,10 @@ def run_mcmc(L: League, n_iter: int = 5000, burnin: int = 1000,
             L.match_home_local, L.match_away_local,
             L.obs_x, L.obs_y,
             L.c_x, L.c_y, L.gamma, L.epsilon, L.tau, PRIOR_VAR,
-            init_prior_mean,
+            getattr(L, "early_process_multiplier", 1.0),
+            getattr(L, "early_process_half_life", 6.0),
+            init_attack_prior_mean, init_defense_prior_mean,
+            init_attack_prior_var, init_defense_prior_var,
             MAX_GOALS,
             int(L.continuous_obs), L.phi,
             proposal_sd,
@@ -524,7 +574,8 @@ def warmup_jit():
     sa = np.zeros((1, 2))
     sd = np.zeros((1, 2))
     sdt = np.zeros((1, 1), dtype=np.int64)
-    ipm = np.zeros(2, dtype=np.float64)   # init_prior_mean: 2 Dummy-Teams
+    ipm = np.zeros(2, dtype=np.float64)
+    ipv = np.full(2, PRIOR_VAR, dtype=np.float64)
     # Beide Branch-Spezialisierungen kompilieren: diskret (int64-obs,
     # continuous=0) und kontinuierlich (float64-obs, continuous=1).
     _run_chunk(
@@ -532,8 +583,8 @@ def warmup_jit():
         team_start, team_matches_flat, strength_days,
         home_idx, away_idx, match_home_local, match_away_local,
         obs_x, obs_y,
-        0.5, 0.1, 0.1, 0.2, 100.0, 1.0 / 37.0,
-        ipm,
+        0.5, 0.1, 0.1, 0.2, 100.0, 1.0 / 37.0, 1.0, 6.0,
+        ipm, ipm, ipv, ipv,
         5, 0, 5.0, 0.05, 0, 1, 0, 1, sa, sd, sdt, 0,
     )
     _run_chunk(
@@ -541,7 +592,7 @@ def warmup_jit():
         team_start, team_matches_flat, strength_days,
         home_idx, away_idx, match_home_local, match_away_local,
         obs_x_f, obs_y_f,
-        0.5, 0.1, 0.1, 0.2, 100.0, 1.0 / 37.0,
-        ipm,
+        0.5, 0.1, 0.1, 0.2, 100.0, 1.0 / 37.0, 1.0, 6.0,
+        ipm, ipm, ipv, ipv,
         5, 1, 5.0, 0.05, 0, 1, 0, 1, sa, sd, sdt, 0,
     )

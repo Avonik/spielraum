@@ -29,6 +29,9 @@ import pandas as pd
 
 UNDERSTAT_FIRST_YEAR = 2014   # erste Saison mit Understat-xG (2014/15)
 UNDERSTAT_LEAGUE = "GER-Bundesliga"
+UNDERSTAT_OUTPUT_COLUMNS = [
+    "start_year", "home_team", "away_team", "home_xg", "away_xg",
+]
 
 # football-data.co.uk-Name  →  Understat-Name (geprüft über 2014/15–2025/26).
 _FD_TO_US: dict[str, str] = {
@@ -38,6 +41,7 @@ _FD_TO_US: dict[str, str] = {
     "Bochum":              "Bochum",
     "Darmstadt":           "Darmstadt",
     "Dortmund":            "Borussia Dortmund",
+    "Elversberg":          "Elversberg",
     "Ein Frankfurt":       "Eintracht Frankfurt",
     "FC Koln":             "FC Cologne",
     "Fortuna Dusseldorf":  "Fortuna Duesseldorf",
@@ -90,14 +94,39 @@ def fetch_understat_xg(start_years: list[int], verbose: bool = True) -> pd.DataF
     seasons = [_soccerdata_season_tag(y) for y in start_years]
     if verbose:
         print(f"  Hole echte xG (Understat) für Saisons {seasons} ...")
-    us = sd.Understat(leagues=UNDERSTAT_LEAGUE, seasons=seasons)
+    now = pd.Timestamp.now(tz="UTC")
+    current_start_year = now.year if now.month >= 7 else now.year - 1
+    refresh_current = current_start_year in start_years
+    # soccerdata caches its global season index without an age check. That
+    # index can predate a newly started season and silently filter it out
+    # before the league endpoint is requested. Refresh only the running season;
+    # completed historical seasons keep using their local cache.
+    us = sd.Understat(
+        leagues=UNDERSTAT_LEAGUE,
+        seasons=seasons,
+        no_cache=refresh_current,
+    )
     sched = us.read_schedule().reset_index()
 
-    sched = sched[sched["is_result"] == True].copy()       # noqa: E712
+    # soccerdata may return a completely empty frame while Understat has not
+    # published the requested season yet. Newer schemas can also omit
+    # ``is_result``; in that case non-null xG values identify played matches.
+    if sched.empty:
+        return pd.DataFrame(columns=UNDERSTAT_OUTPUT_COLUMNS)
+    required = {"date", "home_team", "away_team", "home_xg", "away_xg"}
+    if not required.issubset(sched.columns):
+        if verbose:
+            missing = sorted(required - set(sched.columns))
+            print(f"  Understat noch nicht verfügbar (fehlende Spalten: {missing}).")
+        return pd.DataFrame(columns=UNDERSTAT_OUTPUT_COLUMNS)
+    if "is_result" in sched.columns:
+        sched = sched[sched["is_result"] == True].copy()   # noqa: E712
+    else:
+        sched = sched.dropna(subset=["home_xg", "away_xg"]).copy()
     sched["home_xg"] = pd.to_numeric(sched["home_xg"], errors="coerce")
     sched["away_xg"] = pd.to_numeric(sched["away_xg"], errors="coerce")
     sched["start_year"] = sched["date"].apply(_season_start_year)
-    out = (sched[["start_year", "home_team", "away_team", "home_xg", "away_xg"]]
+    out = (sched[UNDERSTAT_OUTPUT_COLUMNS]
            .dropna(subset=["home_xg", "away_xg"])
            .drop_duplicates(["start_year", "home_team", "away_team"]))
     return out

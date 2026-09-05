@@ -1,0 +1,16 @@
+{
+  "transition_experiment": "v2\\output\\preseason_experiment_confirm_20260728_215738",
+  "saved_v2_run": "v2\\output\\multiseason_20260625_200345",
+  "comparison_starts_at_saved_v2_forecasts": true,
+  "n_common_matches": 925,
+  "transition_mcmc_budget": {
+    "prior_iter": 5000,
+    "prior_burnin": 1000,
+    "base_iter": 3000,
+    "base_burnin": 600,
+    "warm_iter": 1500,
+    "warm_burnin": 250,
+    "thin": 10
+  },
+  "transition_xg_source": "Understat real xG"
+}

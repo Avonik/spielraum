@@ -1,0 +1,29 @@
+{
+  "stage": "confirm",
+  "seasons": [
+    "2022/23",
+    "2023/24",
+    "2024/25"
+  ],
+  "configs": [
+    "level_all10"
+  ],
+  "bundle_configs": [
+    "level_all10"
+  ],
+  "budget": "confirm",
+  "mcmc_budget": {
+    "prior_iter": 5000,
+    "prior_burnin": 1000,
+    "base_iter": 3000,
+    "base_burnin": 600,
+    "warm_iter": 1500,
+    "warm_burnin": 250,
+    "thin": 10
+  },
+  "xg_source": "football-data shot proxy",
+  "xg_weights": {
+    "off_target": 0.002800252813927396,
+    "on_target": 0.2914060013601219
+  }
+}
