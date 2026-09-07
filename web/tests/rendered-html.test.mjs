@@ -27,8 +27,8 @@ test("server-renders the forecast dashboard", async () => {
   assert.match(html, /Historische Prognosen/);
   assert.match(html, /Historischen Spieltag ausw.hlen/);
   assert.match(html, /Spieltag 34/);
-  assert.match(html, /Ein Blick in die Glaskugel/);
-  assert.match(html, /Das Model\. How it works/);
+  assert.match(html, /Die Saison im Blick/);
+  assert.match(html, /Wie die Prognose entsteht/);
   assert.match(html, /F.r Nerds/);
   assert.match(html, /hero-forecast/);
   assert.match(html, /Erste Begegnung des Spieltags/);
@@ -47,8 +47,9 @@ test("server-renders the forecast dashboard", async () => {
   assert.match(html, /Abwehr/);
   assert.match(html, /↓/);
   assert.doesNotMatch(html, /strength-chart/);
-  assert.match(html, /club-mark--circle[^>]*club-mark--bvb/);
-  assert.match(html, /club-mark--diamond[^>]*club-mark--svw/);
+  assert.match(html, /class="club-mark club-mark--small" style="--club-primary:#f0d522"/);
+  assert.match(html, /class="club-mark club-mark--small" style="--club-primary:#14824b"/);
+  assert.doesNotMatch(html, /\/club-marks\/|club-mark--diamond|club-mark--circle/);
   assert.doesNotMatch(html, /Keine offiziellen Vereinswappen|Real xG|–/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton/i);
 });

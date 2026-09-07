@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import "./fonts.css";
 import "./globals.css";
 import "./matchday.css";
 
@@ -16,5 +17,8 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="de"><body>{children}</body></html>;
+  return <html lang="de"><head>
+    <link rel="preload" href="/fonts/barlow-400.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+    <link rel="preload" href="/fonts/barlow-condensed-700.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+  </head><body>{children}</body></html>;
 }

@@ -159,14 +159,8 @@ function placement(clubValue: Club, median: number, range: [number, number], tit
 }
 
 function ClubMark({ club: clubValue, size = "normal" }: { club: Club; size?: "small" | "normal" | "large" }) {
-  const style = {
-    "--club-primary": clubValue.primary,
-    "--club-secondary": clubValue.secondary,
-  } as CSSProperties;
   return (
-    <span className={`club-mark club-mark--${clubValue.variant} club-mark--${size} club-mark--${clubValue.code.toLowerCase()}`} style={style} aria-hidden="true">
-      <span>{clubValue.code}</span>
-    </span>
+    <span className={`club-mark club-mark--${size}`} style={{ "--club-primary": clubValue.primary } as CSSProperties} aria-hidden="true" />
   );
 }
 
@@ -185,7 +179,7 @@ function MatchCard({ item, featured = false, index = 0 }: { item: Fixture; featu
   const favorite = item.probabilities.indexOf(Math.max(...item.probabilities));
   return (
     <article className={`match-card ${featured ? "match-card--featured" : ""}`} style={{ "--delay": `${index * 55}ms` } as CSSProperties}>
-      <div className="match-card__time"><span>{formatKickoff(item.kickoff)}</span><span className="match-card__tag">{featured ? "Im Fokus" : "Bundesliga"}</span></div>
+      <div className="match-card__time"><span>{formatKickoff(item.kickoff)}</span>{featured && <span className="match-card__tag">Im Fokus</span>}</div>
       <div className="match-card__teams">
         <div className="match-team"><ClubMark club={item.home} size={featured ? "large" : "normal"} /><strong>{item.home.short}</strong><small>Heim</small></div>
         <span className="versus">VS</span>
@@ -218,12 +212,45 @@ function HistoryRow({ item }: { item: HistoryItem }) {
   );
 }
 
-function TrendBars({ values, color }: { values: number[]; color: string }) {
+function TrendBars({ values, matchdays, label, color }: {
+  values: number[];
+  matchdays: number[];
+  label: string;
+  color: string;
+}) {
+  const [inspectedIndex, setInspectedIndex] = useState<number | null>(null);
+  const activeIndex = inspectedIndex !== null && inspectedIndex < values.length
+    ? inspectedIndex
+    : values.length - 1;
+  if (values.length === 0) return <p className="trend-chart__empty">Noch keine Werte vorhanden.</p>;
+
   return (
-    <div className="trend-bars" aria-hidden="true">
-      {values.map((value, index) => (
-        <i key={`${value}-${index}`} style={{ height: `${Math.max(12, value)}%`, background: color, "--bar-delay": `${index * 70}ms` } as CSSProperties} />
-      ))}
+    <div className="trend-chart" style={{ "--trend-color": color, "--trend-width": `${values.length * 30 - 6}px` } as CSSProperties}>
+      <div className="trend-chart__readout" role="status" aria-live="polite" aria-atomic="true">
+        <span>Vor Spieltag {matchdays[activeIndex] ?? activeIndex + 1}</span>
+        <strong>{label} {formatIndex(values[activeIndex])}</strong>
+      </div>
+      <div className="trend-chart__scroll">
+        <div className="trend-bars" role="group" aria-label={`${label} nach Spieltag`}>
+          {values.map((value, index) => (
+            <button
+              type="button"
+              className={`trend-bar ${index === activeIndex ? "trend-bar--active" : ""}`}
+              key={`${matchdays[index] ?? index}-${index}`}
+              aria-label={`${label}, vor Spieltag ${matchdays[index] ?? index + 1}: ${formatIndex(value)}`}
+              onMouseEnter={() => setInspectedIndex(index)}
+              onFocus={() => setInspectedIndex(index)}
+              onClick={() => setInspectedIndex(index)}
+            >
+              <span className="trend-bar__fill" style={{ height: `${Math.max(0, Math.min(100, value))}%` }} />
+            </button>
+          ))}
+        </div>
+        <div className="trend-chart__range" aria-hidden="true">
+          <span>ST {matchdays[0] ?? 1}</span>
+          {values.length > 1 && <span>ST {matchdays[values.length - 1] ?? values.length}</span>}
+        </div>
+      </div>
     </div>
   );
 }
@@ -409,7 +436,7 @@ export default function Home() {
 
       <section className="section history-section" id="historie">
         <div className="section-heading section-heading--compact">
-          <div><div><div className="eyebrow">Historische Prognosen</div><h2>Was wir damals wirklich wussten.</h2>{data.history.length > 0 && <div className="matchday-switcher matchday-switcher--heading" aria-label="Historischen Spieltag auswählen">
+          <div><div><div className="eyebrow">Historische Prognosen</div><h2>Nach dem Abpfiff.</h2>{data.history.length > 0 && <div className="matchday-switcher matchday-switcher--heading" aria-label="Historischen Spieltag auswählen">
             <button type="button" aria-label="Vorheriger Spieltag" disabled={activeHistoryIndex >= historyGroups.length - 1} onClick={() => setSelectedHistoryKey(historyGroups[activeHistoryIndex + 1]?.key ?? activeHistoryKey)}>←</button>
             <div><strong>{activeHistoryGroup?.matchday ? `Spieltag ${activeHistoryGroup.matchday}` : "Archiv"}</strong>{activeHistoryGroup?.season && <small>{activeHistoryGroup.season}</small>}</div>
             <button type="button" aria-label="Nächster Spieltag" disabled={activeHistoryIndex <= 0} onClick={() => setSelectedHistoryKey(historyGroups[activeHistoryIndex - 1]?.key ?? activeHistoryKey)}>→</button>
@@ -438,7 +465,7 @@ export default function Home() {
 
       <section className="section strength-section" id="staerken">
         <div className="section-heading">
-          <div><div><div className="eyebrow">Dynamische Teamstärken</div><h2>Form ist ein Prozess, kein Etikett.</h2>{data.mode === "preview" && <span className="preview-label">Illustrative Preview</span>}</div></div>
+          <div><div><div className="eyebrow">Dynamische Teamstärken</div><h2>Die Form dahinter.</h2>{data.mode === "preview" && <span className="preview-label">Illustrative Preview</span>}</div></div>
           <p className="section-intro">Angriff und Abwehr entwickeln sich getrennt. Neue Spieldaten aktualisieren die latente Stärke, ohne einzelne Ergebnisse überzubewerten.</p>
         </div>
         <div className="strength-panel">
@@ -454,18 +481,15 @@ export default function Home() {
           </div>
           {selectedStrength && <div className="strength-detail">
             <div className="strength-title"><ClubMark club={selectedStrength.club} size="large" /><div><small>Aktueller {strengthSort.metric === "attack" ? "Angriffs" : "Abwehr"}index</small><h3>{selectedStrength.club.name}</h3></div><strong>{formatIndex(selectedStrengthValue)}</strong></div>
-            <div className="trend-row"><div><span className="legend-dot legend-dot--attack" />Angriff <b>{formatIndex(selectedStrength.attack.at(-1))}</b></div><TrendBars values={selectedStrength.attack} color="var(--attack)" /></div>
-            <div className="trend-row"><div><span className="legend-dot legend-dot--defense" />Abwehr <b>{formatIndex(selectedStrength.defense.at(-1))}</b></div><TrendBars values={selectedStrength.defense} color="var(--defense)" /></div>
-            <div className={`trend-axis ${selectedStrength.matchdays.length === 1 ? "trend-axis--single" : ""}`}>
-              {selectedStrength.matchdays.length === 1 ? <span>Stand vor Spieltag {selectedStrength.matchdays[0]}</span> : <><span>ST {selectedStrength.matchdays[0]}</span><span>ST {selectedStrength.matchdays.at(-1)}</span></>}
-            </div>
+            <div className="trend-row"><div><span className="legend-dot legend-dot--attack" />Angriff <b>{formatIndex(selectedStrength.attack.at(-1))}</b></div><TrendBars key={`${selectedStrength.club.code}-attack`} values={selectedStrength.attack} matchdays={selectedStrength.matchdays} label="Angriff" color="var(--attack)" /></div>
+            <div className="trend-row"><div><span className="legend-dot legend-dot--defense" />Abwehr <b>{formatIndex(selectedStrength.defense.at(-1))}</b></div><TrendBars key={`${selectedStrength.club.code}-defense`} values={selectedStrength.defense} matchdays={selectedStrength.matchdays} label="Abwehr" color="var(--defense)" /></div>
           </div>}
         </div>
       </section>
 
       <section className="section placements-section" id="tabelle">
         <div className="section-heading">
-          <div><div><div className="eyebrow">50.000 Saison-Simulationen</div><h2>Ein Blick in die Glaskugel...</h2>{data.mode === "preview" && <span className="preview-label">Illustrative Preview</span>}</div></div>
+          <div><div><div className="eyebrow">50.000 Saison-Simulationen</div><h2>Die Saison im Blick.</h2>{data.mode === "preview" && <span className="preview-label">Illustrative Preview</span>}</div></div>
           <p className="section-intro">Keine Punktprognose, sondern eine Verteilung möglicher Endplatzierungen. Gerade früh in der Saison ist Unsicherheit ein Ergebnis, kein Fehler.</p>
         </div>
         <div className="placement-table" role="region" aria-label="Saisonprognose, auf kleinen Bildschirmen horizontal scrollbar" tabIndex={0}>
@@ -480,7 +504,7 @@ export default function Home() {
 
       <section className="section model-section" id="modell">
         <div className="section-heading">
-          <div><div><div className="eyebrow">Unter der Haube</div><h2>Das Model. How it works</h2></div></div>
+          <div><div><div className="eyebrow">Das Modell</div><h2>Wie die Prognose entsteht.</h2></div></div>
           <a className="nerd-link" href="/nerds">Für Nerds <span>Statistical Deep Dive</span> →</a>
         </div>
         <div className="model-showcase">

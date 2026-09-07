@@ -1,0 +1,141 @@
+{
+  "generator": "built-in image_gen",
+  "status": "Original-inspired drafts for later legal review; no legal clearance.",
+  "assets": [
+    {
+      "code": "FCB",
+      "name": "Bayern München",
+      "prompt": "Use case: logo-brand. Asset type: single football club crest draft for web app, subject to later legal review. Create an original-adjacent redesign inspired by Bayern München's recognizable colors and broad heraldic motifs: red round rim and blue and white boldly interwoven geometric diamond center, FCB in white on red top arc. Visibly newly drawn and stylized design, not an exact replica. Polished flat vector-like graphic, strong confident outlines, extremely sharp simple shapes legible at 32px. One single crest centered on square canvas occupying 88% of available width or height, true transparent background with alpha, no backdrop. Exact text only: \"FCB\". No full club name, no founding dates, no sponsor text, no stars, no watermark, no gradients, no shadows, no mockup.",
+      "file": "web/public/club-marks/fcb.png",
+      "sha256": "514325006bf354da1e8f1f02a7d3e472a655f218417f93147fc70b2e75a1171b"
+    },
+    {
+      "code": "VFB",
+      "name": "VfB Stuttgart",
+      "prompt": "Use case: logo-brand. Asset type: single football club crest draft for web app, subject to later legal review. Create an original-adjacent redesign inspired by VfB Stuttgart's recognizable colors and broad heraldic motifs: white shield with red horizontal band bearing white VFB, three newly drawn black abstract antler strokes below band. Visibly newly drawn and stylized design, not an exact replica. Polished flat vector-like graphic, strong confident outlines, extremely sharp simple shapes legible at 32px. One single crest centered on square canvas occupying 88% of available width or height, true transparent background with alpha, no backdrop. Exact text only: \"VFB\". No full club name, no founding dates, no sponsor text, no stars, no watermark, no gradients, no shadows, no mockup.",
+      "file": "web/public/club-marks/vfb.png",
+      "sha256": "b9db869aaec40095c4d7870ca7ecce142a74a122c882a1d834e84bf7df688903"
+    },
+    {
+      "code": "ELV",
+      "name": "SV Elversberg",
+      "prompt": "Use case: logo-brand. Asset type: single football club crest draft for web app, subject to later legal review. Create an original-adjacent redesign inspired by SV Elversberg's recognizable colors and broad heraldic motifs: black and white round crest with strong white ELV monogram and abstract black white striped center, no yellow. Visibly newly drawn and stylized design, not an exact replica. Polished flat vector-like graphic, strong confident outlines, extremely sharp simple shapes legible at 32px. One single crest centered on square canvas occupying 88% of available width or height, true transparent background with alpha, no backdrop. Exact text only: \"ELV\". No full club name, no founding dates, no sponsor text, no stars, no watermark, no gradients, no shadows, no mockup.",
+      "file": "web/public/club-marks/elv.png",
+      "sha256": "be2a01d141b4fdff41d26214d48f2345e31283cd1059a2ce5bc8627f7edb110f"
+    },
+    {
+      "code": "B04",
+      "name": "Bayer Leverkusen",
+      "prompt": "Use case: logo-brand. Asset type: single football club crest draft for web app, subject to later legal review. Create an original-adjacent redesign inspired by Bayer Leverkusen's recognizable colors and broad heraldic motifs: red and black heraldic crest with two stylized flanking red lion forms and central white shield containing black B04. Visibly newly drawn and stylized design, not an exact replica. Polished flat vector-like graphic, strong confident outlines, extremely sharp simple shapes legible at 32px. One single crest centered on square canvas occupying 88% of available width or height, true transparent background with alpha, no backdrop. Exact text only: \"B04\". No full club name, no founding dates, no sponsor text, no stars, no watermark, no gradients, no shadows, no mockup.",
+      "file": "web/public/club-marks/b04.png",
+      "sha256": "3e3e21823f2f5fd675b1a34f68785d35c645ded3d0178d9670128f3a9741266c"
+    },
+    {
+      "code": "KOE",
+      "name": "1. FC Köln",
+      "prompt": "Use case: logo-brand. Asset type: single football club crest draft for web app, subject to later legal review. Create an original-adjacent redesign inspired by 1. FC Köln's recognizable colors and broad heraldic motifs: red white medallion combining a new geometric twin-spire cathedral silhouette and angular goat head silhouette, bold KOE below. Visibly newly drawn and stylized design, not an exact replica. Polished flat vector-like graphic, strong confident outlines, extremely sharp simple shapes legible at 32px. One single crest centered on square canvas occupying 88% of available width or height, true transparent background with alpha, no backdrop. Exact text only: \"KOE\". No full club name, no founding dates, no sponsor text, no stars, no watermark, no gradients, no shadows, no mockup.",
+      "file": "web/public/club-marks/koe.png",
+      "sha256": "0993d5eb2a88db15ea9a9d162c6f090dc2234d6cb5c4f7a90c72cfcee77e6c4b"
+    },
+    {
+      "code": "TSG",
+      "name": "TSG Hoffenheim",
+      "prompt": "Use case: logo-brand. Asset type: single football club crest draft for web app, subject to later legal review. Create an original-adjacent redesign inspired by TSG Hoffenheim's recognizable colors and broad heraldic motifs: blue and white shield with a newly drawn flowing diagonal blue division and bold white TSG in upper blue field. Visibly newly drawn and stylized design, not an exact replica. Polished flat vector-like graphic, strong confident outlines, extremely sharp simple shapes legible at 32px. One single crest centered on square canvas occupying 88% of available width or height, true transparent background with alpha, no backdrop. Exact text only: \"TSG\". No full club name, no founding dates, no sponsor text, no stars, no watermark, no gradients, no shadows, no mockup.",
+      "file": "web/public/club-marks/tsg.png",
+      "sha256": "e2b05727b42b0a66799bef81ac8abd938ebbe1ba5ccb341daed445cff8d88b02"
+    },
+    {
+      "code": "FCU",
+      "name": "Union Berlin",
+      "prompt": "Use case: logo-brand. Asset type: single football club crest draft for web app, subject to later legal review. Create an original-adjacent redesign inspired by Union Berlin's recognizable colors and broad heraldic motifs: red gold white horizontal oval badge with bold geometric red FCU lettering on white field and dynamic gold/red rim. Visibly newly drawn and stylized design, not an exact replica. Polished flat vector-like graphic, strong confident outlines, extremely sharp simple shapes legible at 32px. One single crest centered on square canvas occupying 88% of available width or height, true transparent background with alpha, no backdrop. Exact text only: \"FCU\". No full club name, no founding dates, no sponsor text, no stars, no watermark, no gradients, no shadows, no mockup.",
+      "file": "web/public/club-marks/fcu.png",
+      "sha256": "f3e610c9949a67c7d91672cabbbfdece83ed558ddaa9893879dfe7dab85693bb"
+    },
+    {
+      "code": "SGE",
+      "prompt": "Use case: logo-brand. Asset type: football-club crest concept for a web app, intended for later legal review. Primary request: Create a polished flat new crest concept inspired closely by the recognizable colors, broad silhouette and motifs of Eintracht Frankfurt, while visibly redrawing and stylizing the design rather than copying the official artwork. Black, red and white circular roundel with a newly drawn angular eagle, wings spread, strong red outer ring, no official eagle tracing. Text (verbatim): \"SGE\". Only this code, no other lettering, full names, dates, sponsor names or stars. Style: crisp bold vector-like shapes, tasteful professional sports identity, simple and readable at 32 px, no gradients, texture, mockup, shadows or watermark. Composition: exactly one crest centered on a square transparent canvas, occupying 88% of canvas width or height, equal generous clear margins. Scene/backdrop: genuinely transparent alpha background; no white backdrop and no checkerboard painted into image.",
+      "file": "web/public/club-marks/sge.png",
+      "sha256": "cd25b357e9fb480cefe2a722bb082797899f8273034ae722dc8487dd5987b579"
+    },
+    {
+      "code": "M05",
+      "prompt": "Use case: logo-brand. Asset type: football-club crest concept for a web app, intended for later legal review. Primary request: Create a polished flat new crest concept inspired closely by the recognizable colors, broad silhouette and motifs of Mainz 05, while visibly redrawing and stylizing the design rather than copying the official artwork. Red and white circular typographic medallion, sweeping interlocking geometric shapes inspired by 05, but use the new text M05 prominently. Text (verbatim): \"M05\". Only this code, no other lettering, full names, dates, sponsor names or stars. Style: crisp bold vector-like shapes, tasteful professional sports identity, simple and readable at 32 px, no gradients, texture, mockup, shadows or watermark. Composition: exactly one crest centered on a square transparent canvas, occupying 88% of canvas width or height, equal generous clear margins. Scene/backdrop: genuinely transparent alpha background; no white backdrop and no checkerboard painted into image.",
+      "file": "web/public/club-marks/m05.png",
+      "sha256": "f82c405258bf867be57f843b0dec7b6d64ba9495ae221feaa70edadaaf129ee3"
+    },
+    {
+      "code": "SCP",
+      "prompt": "Use case: logo-brand. Asset type: football-club crest concept for a web app, intended for later legal review. Primary request: Create a polished flat new crest concept inspired closely by the recognizable colors, broad silhouette and motifs of SC Paderborn, while visibly redrawing and stylizing the design rather than copying the official artwork. Blue, black and white roundel, bold asymmetrical black and blue inner fields with dynamic diagonal divisions and large white SCP lettering. Text (verbatim): \"SCP\". Only this code, no other lettering, full names, dates, sponsor names or stars. Style: crisp bold vector-like shapes, tasteful professional sports identity, simple and readable at 32 px, no gradients, texture, mockup, shadows or watermark. Composition: exactly one crest centered on a square transparent canvas, occupying 88% of canvas width or height, equal generous clear margins. Scene/backdrop: genuinely transparent alpha background; no white backdrop and no checkerboard painted into image.",
+      "file": "web/public/club-marks/scp.png",
+      "sha256": "3c9f904fc79f4ff4f73eaf503b5b79f974f1a843c370f124f11783292ecbc8ed"
+    },
+    {
+      "code": "RBL",
+      "prompt": "Use case: logo-brand. Asset type: football-club crest concept for a web app, intended for later legal review. Primary request: Create a polished flat new crest concept inspired closely by the recognizable colors, broad silhouette and motifs of RB Leipzig, while visibly redrawing and stylizing the design rather than copying the official artwork. White and red compact shield with a pair of newly drawn stylized charging bull-like animal forms facing inward toward one small central football, code below. Text (verbatim): \"RBL\". Only this code, no other lettering, full names, dates, sponsor names or stars. Style: crisp bold vector-like shapes, tasteful professional sports identity, simple and readable at 32 px, no gradients, texture, mockup, shadows or watermark. Composition: exactly one crest centered on a square transparent canvas, occupying 88% of canvas width or height, equal generous clear margins. Scene/backdrop: genuinely transparent alpha background; no white backdrop and no checkerboard painted into image.",
+      "file": "web/public/club-marks/rbl.png",
+      "sha256": "8d823196ad9ec693fdcfa8c3102e4407d0ec9f2961ef941a99f1afce58a44413"
+    },
+    {
+      "code": "BMG",
+      "prompt": "Use case: logo-brand. Asset type: football-club crest concept for a web app, intended for later legal review. Primary request: Create a polished flat new crest concept inspired closely by the recognizable colors, broad silhouette and motifs of Borussia Mönchengladbach, while visibly redrawing and stylizing the design rather than copying the official artwork. Elongated vertical diamond with black and white thick nested borders and subtle green inner outline, new bold geometric BMG lettering inside instead of official letter mark. Text (verbatim): \"BMG\". Only this code, no other lettering, full names, dates, sponsor names or stars. Style: crisp bold vector-like shapes, tasteful professional sports identity, simple and readable at 32 px, no gradients, texture, mockup, shadows or watermark. Composition: exactly one crest centered on a square transparent canvas, occupying 88% of canvas width or height, equal generous clear margins. Scene/backdrop: genuinely transparent alpha background; no white backdrop and no checkerboard painted into image.",
+      "file": "web/public/club-marks/bmg.png",
+      "sha256": "8deda05552f4cb55eedc3864228e2ebaf87ae7a55e1bddf1f99ef8bb79e4444e"
+    },
+    {
+      "code": "BVB",
+      "prompt": "Use case: logo-brand. Asset type: football-club crest concept for a web app, intended for later legal review. Primary request: Create a polished flat new crest concept inspired closely by the recognizable colors, broad silhouette and motifs of Borussia Dortmund, while visibly redrawing and stylizing the design rather than copying the official artwork. Yellow and black circular roundel, new clean single-line BVB composition with angular geometric lettering and bold black circle border. Do not use official stacked BVB09 composition. Text (verbatim): \"BVB\". Only this code, no other lettering, full names, dates, sponsor names or stars. Style: crisp bold vector-like shapes, tasteful professional sports identity, simple and readable at 32 px, no gradients, texture, mockup, shadows or watermark. Composition: exactly one crest centered on a square transparent canvas, occupying 88% of canvas width or height, equal generous clear margins. Scene/backdrop: genuinely transparent alpha background; no white backdrop and no checkerboard painted into image.",
+      "file": "web/public/club-marks/bvb.png",
+      "sha256": "e798ddf5f358878d7a7a9f59fe30260b2e102b8dd6edbda19b18476c636d9fcb"
+    },
+    {
+      "code": "HSV",
+      "prompt": "Use case: logo-brand. Asset type: football-club crest concept for a web app, intended for later legal review. Primary request: Create a polished flat new crest concept inspired closely by the recognizable colors, broad silhouette and motifs of Hamburger SV, while visibly redrawing and stylizing the design rather than copying the official artwork. Blue square badge with a thick white diamond surrounding a black inner diamond. Redesign proportions and incorporate new white HSV lettering clearly inside the black center. Text (verbatim): \"HSV\". Only this code, no other lettering, full names, dates, sponsor names or stars. Style: crisp bold vector-like shapes, tasteful professional sports identity, simple and readable at 32 px, no gradients, texture, mockup, shadows or watermark. Composition: exactly one crest centered on a square transparent canvas, occupying 88% of canvas width or height, equal generous clear margins. Scene/backdrop: genuinely transparent alpha background; no white backdrop and no checkerboard painted into image.",
+      "file": "web/public/club-marks/hsv.png",
+      "sha256": "37f91b719f3c8d1b3bfe39be975a4901e20c29980957ce1bbb61cb7d99851133"
+    },
+    {
+      "code": "SCF",
+      "prompt": "Use case: logo-brand. Asset type: individual football club crest concept for an app, for later legal review. Primary request: polished flat football crest redesign inspired by SC Freiburg's recognizable colors, broad heraldic silhouette and motifs: black, white and red upright oval with a newly drawn angular griffin. Visibly newly drawn and stylized rather than an exact replica. Bold crisp vector-like edges, minimal strong geometry readable at 32px. Genuine transparent background. Square canvas, one centered crest occupies 88% of canvas extent. Text verbatim: \"SCF\" only, clear legible uppercase lettering incorporated prominently. No full names, no dates, no sponsor text, no stars, no shadows, no gradients, no mockup, no extraneous symbols, no watermark. Render one finished crest.",
+      "file": "web/public/club-marks/scf.png",
+      "sha256": "17bbcdb78d63c26024a3385862aa776f7a9bd624ade3b3486665d6a809ff6d8c"
+    },
+    {
+      "code": "SVW",
+      "prompt": "Use case: logo-brand. Asset type: individual football club crest concept for an app, for later legal review. Primary request: polished flat football crest redesign inspired by Werder Bremen's recognizable colors, broad heraldic silhouette and motifs: green and white diamond with a custom interwoven SVW monogram. Visibly newly drawn and stylized rather than an exact replica. Bold crisp vector-like edges, minimal strong geometry readable at 32px. Genuine transparent background. Square canvas, one centered crest occupies 88% of canvas extent. Text verbatim: \"SVW\" only, clear legible uppercase lettering incorporated prominently. No full names, no dates, no sponsor text, no stars, no shadows, no gradients, no mockup, no extraneous symbols, no watermark. Render one finished crest.",
+      "file": "web/public/club-marks/svw.png",
+      "sha256": "facb176287ee72dd4b35f34bc2a2efde5c0e71fcdf383bc6161929732aef7f80"
+    },
+    {
+      "code": "FCA",
+      "prompt": "Use case: logo-brand. Asset type: individual football club crest concept for an app, for later legal review. Primary request: polished flat football crest redesign inspired by FC Augsburg's recognizable colors, broad heraldic silhouette and motifs: red, green and white shield with a simple pine-cone symbol. Visibly newly drawn and stylized rather than an exact replica. Bold crisp vector-like edges, minimal strong geometry readable at 32px. Genuine transparent background. Square canvas, one centered crest occupies 88% of canvas extent. Text verbatim: \"FCA\" only, clear legible uppercase lettering incorporated prominently. No full names, no dates, no sponsor text, no stars, no shadows, no gradients, no mockup, no extraneous symbols, no watermark. Render one finished crest.",
+      "editPrompt": "Use case: precise-object-edit. Edit this football crest to repair only the unwanted dark/transparency smudge on the green field to the upper right of the pine cone, around x=910 y=510. Fill this field cleanly with the same flat dark green as its surroundings. Also clean isolated stray pixels outside the shield. Preserve the exact shield shape, red/green/white/gold colors, pine cone, leaves, and FCA lettering. Keep actual transparent background outside the crest and all remaining composition unchanged.",
+      "alphaPrompt": "Use case: background-extraction. Remove the gray and white checkerboard background outside this shield and replace it with genuine alpha transparency, NOT painted checkerboard. Preserve all pixels of the shield design itself: FCA red letters, red green fields, gold border, pine cone and leaves. Output a transparent PNG cutout of exactly the crest, no other changes.",
+      "file": "web/public/club-marks/fca.png",
+      "sha256": "935a2e8b3a65ad3d3b737b3ba6b2eaedcdd39c84d11ff92d7b9294ccff0f807d"
+    },
+    {
+      "code": "S04",
+      "prompt": "Use case: logo-brand. Asset type: individual football club crest concept for an app, for later legal review. Primary request: polished flat football crest redesign inspired by FC Schalke 04's recognizable colors, broad heraldic silhouette and motifs: royal blue and white roundel with new bold S04 lettering. Visibly newly drawn and stylized rather than an exact replica. Bold crisp vector-like edges, minimal strong geometry readable at 32px. Genuine transparent background. Square canvas, one centered crest occupies 88% of canvas extent. Text verbatim: \"S04\" only, clear legible uppercase lettering incorporated prominently. No full names, no dates, no sponsor text, no stars, no shadows, no gradients, no mockup, no extraneous symbols, no watermark. Render one finished crest.",
+      "file": "web/public/club-marks/s04.png",
+      "sha256": "f8615cd5ed0e35177589f4b7531a5b23f7cbd90ddc1d8da71a3fe684ee0dfbce"
+    },
+    {
+      "code": "FCH",
+      "prompt": "Use case: logo-brand. Asset type: individual football club crest concept for an app, for later legal review. Primary request: polished flat football crest redesign inspired by 1. FC Heidenheim's recognizable colors, broad heraldic silhouette and motifs: red, blue and white medallion with bold FCH monogram and geometric red and blue divisions. Visibly newly drawn and stylized rather than an exact replica. Bold crisp vector-like edges, minimal strong geometry readable at 32px. Genuine transparent background. Square canvas, one centered crest occupies 88% of canvas extent. Text verbatim: \"FCH\" only, clear legible uppercase lettering incorporated prominently. No full names, no dates, no sponsor text, no stars, no shadows, no gradients, no mockup, no extraneous symbols, no watermark. Render one finished crest.",
+      "file": "web/public/club-marks/fch.png",
+      "sha256": "1b1284f284022ab86be535c74db6bd624d2aec2eff90ba6cbfa16ad29c7c0977"
+    },
+    {
+      "code": "STP",
+      "prompt": "Use case: logo-brand. Asset type: individual football club crest concept for an app, for later legal review. Primary request: polished flat football crest redesign inspired by FC St. Pauli's recognizable colors, broad heraldic silhouette and motifs: brown, red and white roundel with a stylized three-tower castle, no skull. Visibly newly drawn and stylized rather than an exact replica. Bold crisp vector-like edges, minimal strong geometry readable at 32px. Genuine transparent background. Square canvas, one centered crest occupies 88% of canvas extent. Text verbatim: \"STP\" only, clear legible uppercase lettering incorporated prominently. No full names, no dates, no sponsor text, no stars, no shadows, no gradients, no mockup, no extraneous symbols, no watermark. Render one finished crest.",
+      "file": "web/public/club-marks/stp.png",
+      "sha256": "d468465032d009d9eac077233c5888ba7e64803703bc10da645a08180085f290"
+    },
+    {
+      "code": "WOB",
+      "prompt": "Use case: logo-brand. Asset type: individual football club crest concept for an app, for later legal review. Primary request: polished flat football crest redesign inspired by VfL Wolfsburg's recognizable colors, broad heraldic silhouette and motifs: vivid green and white roundel with an original angular WOB monogram. Visibly newly drawn and stylized rather than an exact replica. Bold crisp vector-like edges, minimal strong geometry readable at 32px. Genuine transparent background. Square canvas, one centered crest occupies 88% of canvas extent. Text verbatim: \"WOB\" only, clear legible uppercase lettering incorporated prominently. No full names, no dates, no sponsor text, no stars, no shadows, no gradients, no mockup, no extraneous symbols, no watermark. Render one finished crest.",
+      "file": "web/public/club-marks/wob.png",
+      "sha256": "aa9552910a20e5917344a5fbcad7183295385ac882a04ff395300bee532a04d5"
+    }
+  ]
+}

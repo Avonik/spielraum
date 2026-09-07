@@ -11,7 +11,8 @@
   --muted: #52665d;
   --line: #d5e1d9;
   --radius: 12px;
-  --display: "Bahnschrift", "Arial Narrow", "Impact", sans-serif;
+  --display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --body: "Barlow", "Segoe UI", Arial, sans-serif;
   --gutter: clamp(20px, 5vw, 80px);
 }
 
@@ -132,26 +133,10 @@ h2 { font-size: clamp(38px, 4.5vw, 70px); letter-spacing: -0.06em; line-height: 
 .signal-flow { height: 68px; position: absolute; bottom: 25px; left: 26px; right: 26px; display: flex; gap: 10px; align-items: end; }.signal-flow i { flex: 1; background: var(--blue); border-radius: 99px; animation: growY 800ms ease both; }
 .backtest-card { margin-top: 18px; background: var(--ink); color: var(--paper); border-radius: 24px; padding: 34px; display: grid; grid-template-columns: 1fr 1fr; gap: 55px; align-items: center; }.backtest-card h3 { font-size: 31px; margin: 9px 0; }.backtest-card p { color: #a9aea4; font-size: 13px; }.backtest-bars { display: grid; gap: 15px; }.backtest-bars > div { display: grid; grid-template-columns: 95px 1fr 65px; gap: 12px; align-items: center; font-size: 11px; }.backtest-bars i { height: 10px; background: #34382f; border-radius: 99px; overflow: hidden; }.backtest-bars b { display: block; height: 100%; background: var(--coral); border-radius: 99px; }.backtest-bars div:nth-child(2) b { background: var(--acid); }.backtest-bars small { color: #a9aea4; text-align: right; }
 
-.club-mark { --club-primary: #222; --club-secondary: #eee; display: inline-grid; place-items: center; flex: none; width: 44px; height: 44px; background: var(--club-primary); color: var(--club-secondary); border: 2px solid rgba(18,20,17,.18); box-shadow: 0 2px 7px rgba(18,20,17,.14); position: relative; overflow: hidden; }
-.club-mark::before, .club-mark::after { content: ""; position: absolute; }.club-mark::before { inset: 18%; background: var(--club-secondary); opacity: .9; }.club-mark span { position: relative; z-index: 3; font: 950 8px ui-monospace, monospace; letter-spacing: -.05em; text-shadow: 0 1px 2px rgba(0,0,0,.2); }
-.club-mark--small { width: 31px; height: 31px; }.club-mark--small span { font-size: 6px; }.club-mark--large { width: 60px; height: 60px; }.club-mark--large span { font-size: 10px; }
-.club-mark--circle { border-radius: 50%; }.club-mark--circle::before { border-radius: 50%; }
-.club-mark--oval { width: 40px; height: 48px; border-radius: 50%; }.club-mark--oval.club-mark--small { width: 28px; height: 33px; }.club-mark--oval.club-mark--large { width: 54px; height: 64px; }.club-mark--oval::before { border-radius: 50%; }
-.club-mark--shield { clip-path: polygon(7% 5%,93% 5%,88% 71%,50% 100%,12% 71%); }.club-mark--shield::before { clip-path: polygon(7% 5%,93% 5%,88% 71%,50% 100%,12% 71%); }
-.club-mark--diamond { transform: rotate(45deg) scale(.76); }.club-mark--diamond::before { inset: 15%; }.club-mark--diamond span { transform: rotate(-45deg) scale(1.22); }
-.club-mark--fcb::before { inset: 13%; background: var(--club-secondary); border: 4px solid var(--club-primary); }.club-mark--fcb span { color: var(--club-primary); text-shadow: none; }
-.club-mark--bvb::before { inset: 18%; background: #111; }.club-mark--bvb span { color: #f0d522; }
-.club-mark--svw::before { display: none; }.club-mark--svw span { color: #fff; font-size: 7px; }
-.club-mark--koe::before { inset: 14%; background: #d31f32; }.club-mark--koe::after { width: 64%; height: 3px; top: 19%; background: #151515; }.club-mark--koe span { color: #fff; }
-.club-mark--scf::before { inset: 4px 50% 4px 4px; background: #151515; border-radius: 100% 0 0 100%; }.club-mark--scf::after { inset: 53% 4px 4px 50%; background: #d92035; border-radius: 0 0 100% 0; }.club-mark--scf span { color: #fff; }
-.club-mark--vfb::before { inset: 38% 0; background: #d71832; }.club-mark--vfb span { color: #151515; text-shadow: 0 1px 1px #fff; }
-.club-mark--b04::before { inset: 18%; background: #101010; }.club-mark--b04 span { color: #fff; }
-.club-mark--tsg::before { inset: 16%; background: #f0eee7; }.club-mark--tsg span { color: #1b64b0; text-shadow: none; }
-.club-mark--rbl::before { inset: 42% 5%; background: #d51e38; }.club-mark--rbl span { color: #151515; text-shadow: 0 1px 1px #fff; }
-.club-mark--hsv::before { inset: 13%; background: #f4f0e8; }.club-mark--hsv::after { left: 17%; right: 17%; top: 45%; height: 13%; background: #d51d32; }.club-mark--hsv span { color: #1767a6; text-shadow: none; }
-.club-mark--bmg::before { inset: 15%; background: #f3efe6; }.club-mark--bmg span { color: #171717; text-shadow: none; }
-.club-mark--fca::before { inset: 0 50% 0 0; background: #b62930; }.club-mark--fca::after { inset: 0 0 0 50%; background: #17754a; }.club-mark--fca span { color: #fff; }
-.club-mark--fcu::before { inset: 20% 8%; border-radius: 50%; background: #f5d537; }.club-mark--sge::before { background: #e32936; }.club-mark--m05::before { background: #f5f0e7; }.club-mark--m05 span { color: #df1f37; text-shadow: none; }.club-mark--s04::before { background: #f3efe7; }.club-mark--s04 span { color: #1769ad; text-shadow: none; }.club-mark--wob::before { background: #f2eee6; }.club-mark--wob span { color: #3d8614; text-shadow: none; }
+/* Team names carry identity; the dot only indicates the primary color. */
+.club-mark { display: inline-block; flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--club-primary, #777); border: 1px solid rgba(127,127,127,.4); }
+.club-mark--small { width: 14px; height: 14px; }
+.club-mark--large { width: 30px; height: 30px; }
 
 .nerd-link { align-self: center; border-bottom: 1px solid var(--ink); padding: 8px 0; cursor: pointer; font-weight: 900; font-size: 14px; text-align: left; }.nerd-link span { color: var(--muted); font-weight: 600; margin-left: 5px; }.nerd-link:hover { color: var(--coral); border-color: var(--coral); }
 
