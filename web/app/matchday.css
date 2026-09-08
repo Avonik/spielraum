@@ -184,8 +184,11 @@ h2 { font-size: clamp(30px, 2.4vw, 38px); font-weight: 600; letter-spacing: -.01
 .backtest-bars b { background: #b65c37; }
 .backtest-bars div:nth-child(2) b { background: #357c4f; }
 .backtest-bars small { font-size: 12px; color: var(--muted); }
-.nerd-link { white-space: normal; line-height: 1.7; align-self: start; }
-.nerd-link span { display: block; margin: 0; font-size: 12px; }
+.nerd-link { position: relative; display: inline-block; max-width: 100%; min-height: 48px; padding: 14px 50px 14px 20px; border: 1px solid #164c39; border-radius: 6px; background: #164c39; color: white; font-size: 16px; white-space: normal; line-height: 1.5; align-self: start; transition: background 160ms ease, border-color 160ms ease; }
+.nerd-link span { display: block; margin: 3px 0 0; font-size: 13px; font-weight: 400; color: #d3dfd7; }
+.nerd-link::after { content: "↗"; position: absolute; right: 18px; top: 50%; transform: translateY(-50%); font-size: 23px; color: var(--acid); }
+.nerd-link:hover { background: #09251d; border-color: #09251d; color: white; }
+.nerd-link:focus-visible { outline: 3px solid #a94927; outline-offset: 4px; }
 footer { background: transparent; color: var(--ink); padding: 60px var(--gutter) 42px; grid-template-columns: var(--rail) minmax(0, 1fr); column-gap: var(--column-gap); }
 footer .brand small { color: var(--muted); }
 footer p { color: var(--muted); font-size: 14px; max-width: 620px; }
@@ -329,4 +332,15 @@ footer > div span { border: 0; padding: 0; font-size: 12px; border-radius: 0; co
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; scroll-behavior: auto !important; transition: none !important; }
+}
+
+/* Mobile-only refinements; desktop rules remain unchanged. */
+@media (max-width: 800px) {
+  .site-header { position: relative; }
+  .site-header nav { flex-wrap: wrap; gap: 0 22px; overflow: visible; padding-bottom: 10px; }
+  .site-header nav a { min-height: 44px; height: auto; }
+  .site-header nav a::after { bottom: 4px; }
+  .placement-table::before { content: "Weitere Spalten: seitlich wischen ↔"; display: block; position: sticky; left: 0; width: fit-content; max-width: 100%; padding: 12px 0; font-size: 14px; color: var(--muted); }
+  footer > div a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: underline; text-underline-offset: 4px; }
+  footer > div { gap: 8px 20px; }
 }

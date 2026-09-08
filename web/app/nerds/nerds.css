@@ -111,3 +111,16 @@
   .probability-example, .paper-reference { padding: 20px; }
   .example-bar span { font-size: 14px; }
 }
+
+@media (max-width: 800px) {
+  .nerd-story .nerd-index { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 8px; padding-block: 10px; overflow: visible; }
+  .nerd-story .nerd-index a { display: flex; align-items: center; min-height: 44px; white-space: normal; font-size: 13px; }
+  .nerd-story section[id] { scroll-margin-top: 128px; }
+  .nerd-story .deep-dive summary { position: relative; display: block; padding: 20px 42px 20px 0; overflow-wrap: anywhere; }
+  .nerd-story .deep-dive summary > span { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); }
+  .nerd-story .deep-dive[open] summary > span { transform: translateY(-50%) rotate(45deg); }
+  .nerd-story .technical-grid, .nerd-story .prior-columns { grid-template-columns: minmax(0, 1fr); }
+  .score-comparison::before { content: "Alle Werte: seitlich wischen ↔"; display: block; position: sticky; left: 0; width: fit-content; max-width: 100%; margin-bottom: 16px; font-size: 14px; color: var(--story-muted); }
+  .nerd-story .equation { scrollbar-width: thin; }
+  .nerd-story .ending-paper, .nerd-story .nerd-topbar .back-link { min-height: 44px; display: inline-flex; align-items: center; }
+}

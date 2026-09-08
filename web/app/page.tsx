@@ -509,7 +509,7 @@ export default function Home() {
       <section className="section model-section" id="modell">
         <div className="section-heading">
           <div><div><div className="eyebrow">Das Modell</div><h2>Wie die Prognose entsteht.</h2></div></div>
-          <a className="nerd-link" href="/nerds">Für Nerds <span>Statistical Deep Dive</span> →</a>
+          <a className="nerd-link" href="/nerds">Für Nerds <span>Statistical Deep Dive</span></a>
         </div>
         <div className="model-showcase">
           <aside className="model-signal" aria-label="Animierte Darstellung der aktiven Modell-Policy">
