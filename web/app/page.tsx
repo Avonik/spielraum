@@ -1,6 +1,7 @@
 "use client";
 
 import { CSSProperties, useEffect, useMemo, useState } from "react";
+import { useLanguage, LanguageSwitch } from "./language";
 import { selectFocusMatch } from "./focus-match";
 
 type Club = {
@@ -97,19 +98,19 @@ function club(
 
 const previewData: DashboardData = {
   mode: "preview",
-  generatedAt: "29. Juli 2026 · Preview-Snapshot",
+  generatedAt: "2026-07-29T12:00:00+02:00",
   season: "2026/27",
   matchday: 1,
   fixtures: [
-    fixture("m1", "Fr · 28. Aug · 20:30", clubs.bayern, clubs.stuttgart, [0.57, 0.23, 0.2]),
-    fixture("m2", "Sa · 29. Aug · 15:30", clubs.elversberg, clubs.leverkusen, [0.17, 0.23, 0.6]),
-    fixture("m3", "Sa · 29. Aug · 15:30", clubs.koeln, clubs.hoffenheim, [0.38, 0.28, 0.34]),
-    fixture("m4", "Sa · 29. Aug · 15:30", clubs.union, clubs.frankfurt, [0.32, 0.29, 0.39]),
-    fixture("m5", "Sa · 29. Aug · 15:30", clubs.mainz, clubs.paderborn, [0.52, 0.27, 0.21]),
-    fixture("m6", "Sa · 29. Aug · 15:30", clubs.leipzig, clubs.gladbach, [0.55, 0.24, 0.21]),
-    fixture("m7", "Sa · 29. Aug · 18:30", clubs.dortmund, clubs.hamburg, [0.63, 0.22, 0.15]),
-    fixture("m8", "So · 30. Aug · 15:30", clubs.freiburg, clubs.bremen, [0.46, 0.28, 0.26]),
-    fixture("m9", "So · 30. Aug · 17:30", clubs.augsburg, clubs.schalke, [0.43, 0.29, 0.28]),
+    fixture("m1", "2026-08-28T20:30:00+02:00", clubs.bayern, clubs.stuttgart, [0.57, 0.23, 0.2]),
+    fixture("m2", "2026-08-29T15:30:00+02:00", clubs.elversberg, clubs.leverkusen, [0.17, 0.23, 0.6]),
+    fixture("m3", "2026-08-29T15:30:00+02:00", clubs.koeln, clubs.hoffenheim, [0.38, 0.28, 0.34]),
+    fixture("m4", "2026-08-29T15:30:00+02:00", clubs.union, clubs.frankfurt, [0.32, 0.29, 0.39]),
+    fixture("m5", "2026-08-29T15:30:00+02:00", clubs.mainz, clubs.paderborn, [0.52, 0.27, 0.21]),
+    fixture("m6", "2026-08-29T15:30:00+02:00", clubs.leipzig, clubs.gladbach, [0.55, 0.24, 0.21]),
+    fixture("m7", "2026-08-29T18:30:00+02:00", clubs.dortmund, clubs.hamburg, [0.63, 0.22, 0.15]),
+    fixture("m8", "2026-08-30T15:30:00+02:00", clubs.freiburg, clubs.bremen, [0.46, 0.28, 0.26]),
+    fixture("m9", "2026-08-30T17:30:00+02:00", clubs.augsburg, clubs.schalke, [0.43, 0.29, 0.28]),
   ],
   history: [
     history("h1", clubs.heidenheim, clubs.mainz, [0.316, 0.212, 0.472], [0, 2], "A", true),
@@ -148,7 +149,7 @@ function history(
   outcome: HistoryItem["outcome"],
   hit: boolean,
 ): HistoryItem {
-  return { ...fixture(id, "16. Mai 2026", home, away, probabilities), season: "2025/26", matchday: 34, score, outcome, hit };
+  return { ...fixture(id, "2026-05-16T15:30:00+02:00", home, away, probabilities), season: "2025/26", matchday: 34, score, outcome, hit };
 }
 
 function strength(clubValue: Club, attack: number[], defense: number[]): StrengthTeam {
@@ -166,25 +167,27 @@ function ClubMark({ club: clubValue, size = "normal" }: { club: Club; size?: "sm
 }
 
 function Probability({ label, value, active }: { label: string; value: number; active?: boolean }) {
+  const { t, formatPercent, formatOdds } = useLanguage();
   return (
     <div className={`probability ${active ? "probability--active" : ""}`}>
-      <span>{label === "1" ? "1 · Heim" : label === "X" ? "X · Remis" : "2 · Gast"}</span>
+      <span>{label === "1" ? t("1 · Heim") : label === "X" ? t("X · Remis") : t("2 · Gast")}</span>
       <strong>{formatPercent(value)}</strong>
-      <small>Quote {formatOdds(value)}</small>
+      <small>{t("Quote ")}{formatOdds(value)}</small>
       <i style={{ "--probability": `${value * 100}%` } as CSSProperties} />
     </div>
   );
 }
 
 function MatchCard({ item, featured = false, index = 0 }: { item: Fixture; featured?: boolean; index?: number }) {
+  const { t, formatKickoff } = useLanguage();
   const favorite = item.probabilities.indexOf(Math.max(...item.probabilities));
   return (
     <article className={`match-card ${featured ? "match-card--featured" : ""}`} style={{ "--delay": `${index * 55}ms` } as CSSProperties}>
-      <div className="match-card__time"><span>{formatKickoff(item.kickoff)}</span>{featured && <span className="match-card__tag">Im Fokus</span>}</div>
+      <div className="match-card__time"><span>{formatKickoff(item.kickoff)}</span>{featured && <span className="match-card__tag">{t("Im Fokus")}</span>}</div>
       <div className="match-card__teams">
-        <div className="match-team"><ClubMark club={item.home} size={featured ? "large" : "normal"} /><strong>{item.home.short}</strong><small>Heim</small></div>
+        <div className="match-team"><ClubMark club={item.home} size={featured ? "large" : "normal"} /><strong>{item.home.name}</strong><small>{t("Heim")}</small></div>
         <span className="versus">VS</span>
-        <div className="match-team match-team--away"><ClubMark club={item.away} size={featured ? "large" : "normal"} /><strong>{item.away.short}</strong><small>Auswärts</small></div>
+        <div className="match-team match-team--away"><ClubMark club={item.away} size={featured ? "large" : "normal"} /><strong>{item.away.name}</strong><small>{t("Auswärts")}</small></div>
       </div>
       <div className="probability-grid">
         <Probability label="1" value={item.probabilities[0]} active={favorite === 0} />
@@ -196,19 +199,20 @@ function MatchCard({ item, featured = false, index = 0 }: { item: Fixture; featu
 }
 
 function HistoryRow({ item }: { item: HistoryItem }) {
+  const { t, formatPercent } = useLanguage();
   const predicted = ["H", "D", "A"][item.probabilities.indexOf(Math.max(...item.probabilities))];
   return (
     <div className="history-row">
       <div className="history-clubs">
-        <div><ClubMark club={item.home} size="small" /><span>{item.home.short}</span></div>
+        <div><ClubMark club={item.home} size="small" /><span>{item.home.name}</span></div>
         <strong>{item.score[0]} : {item.score[1]}</strong>
-        <div><ClubMark club={item.away} size="small" /><span>{item.away.short}</span></div>
+        <div><ClubMark club={item.away} size="small" /><span>{item.away.name}</span></div>
       </div>
       <div className="history-prediction">
-        <span>Prognose {predicted}</span>
+        <span>{t("Prognose ")}{predicted}</span>
         <strong>{formatPercent(Math.max(...item.probabilities))}</strong>
       </div>
-      <span className={`result-pill ${item.hit ? "result-pill--hit" : "result-pill--miss"}`}>{item.hit ? "Treffer" : "Überraschung"}</span>
+      <span className={`result-pill ${item.hit ? "result-pill--hit" : "result-pill--miss"}`}>{item.hit ? t("Treffer") : t("Überraschung")}</span>
     </div>
   );
 }
@@ -219,26 +223,27 @@ function TrendBars({ values, matchdays, label, color }: {
   label: string;
   color: string;
 }) {
+  const { t, language, formatIndex } = useLanguage();
   const [inspectedIndex, setInspectedIndex] = useState<number | null>(null);
   const activeIndex = inspectedIndex !== null && inspectedIndex < values.length
     ? inspectedIndex
     : values.length - 1;
-  if (values.length === 0) return <p className="trend-chart__empty">Noch keine Werte vorhanden.</p>;
+  if (values.length === 0) return <p className="trend-chart__empty">{t("Noch keine Werte vorhanden.")}</p>;
 
   return (
     <div className="trend-chart" style={{ "--trend-color": color, "--trend-width": `${values.length * 30 - 6}px` } as CSSProperties}>
       <div className="trend-chart__readout" role="status" aria-live="polite" aria-atomic="true">
-        <span>Vor Spieltag {matchdays[activeIndex] ?? activeIndex + 1}</span>
+        <span>{t("Vor Spieltag ")}{matchdays[activeIndex] ?? activeIndex + 1}</span>
         <strong>{label} {formatIndex(values[activeIndex])}</strong>
       </div>
       <div className="trend-chart__scroll">
-        <div className="trend-bars" role="group" aria-label={`${label} nach Spieltag`}>
+        <div className="trend-bars" role="group" aria-label={`${label} ${language === "de" ? "nach Spieltag" : "by matchday"}`}>
           {values.map((value, index) => (
             <button
               type="button"
               className={`trend-bar ${index === activeIndex ? "trend-bar--active" : ""}`}
               key={`${matchdays[index] ?? index}-${index}`}
-              aria-label={`${label}, vor Spieltag ${matchdays[index] ?? index + 1}: ${formatIndex(value)}`}
+              aria-label={`${label}, ${language === "de" ? "vor Spieltag" : "before matchday"} ${matchdays[index] ?? index + 1}: ${formatIndex(value)}`}
               onMouseEnter={() => setInspectedIndex(index)}
               onFocus={() => setInspectedIndex(index)}
               onClick={() => setInspectedIndex(index)}
@@ -248,8 +253,8 @@ function TrendBars({ values, matchdays, label, color }: {
           ))}
         </div>
         <div className="trend-chart__range" aria-hidden="true">
-          <span>ST {matchdays[0] ?? 1}</span>
-          {values.length > 1 && <span>ST {matchdays[values.length - 1] ?? values.length}</span>}
+          <span>{t("ST ")}{matchdays[0] ?? 1}</span>
+          {values.length > 1 && <span>{t("ST ")}{matchdays[values.length - 1] ?? values.length}</span>}
         </div>
       </div>
     </div>
@@ -257,9 +262,12 @@ function TrendBars({ values, matchdays, label, color }: {
 }
 
 function RankTrend({ change }: { change: number | undefined }) {
+  const { language } = useLanguage();
   if (!change) return null;
   const improved = change > 0;
-  const label = improved
+  const label = language === "en"
+    ? `Rank ${improved ? "up" : "down"} ${Math.abs(change)} ${Math.abs(change) === 1 ? "place" : "places"}`
+    : improved
     ? `Rang um ${change} ${change === 1 ? "Platz" : "Plätze"} verbessert`
     : `Rang um ${Math.abs(change)} ${change === -1 ? "Platz" : "Plätze"} verschlechtert`;
   return <span className={`rank-trend rank-trend--${improved ? "up" : "down"}`} aria-label={label} title={label}>{improved ? "↗" : "↘"}</span>;
@@ -270,7 +278,7 @@ function strengthRankChanges(strengths: StrengthTeam[], metric: StrengthSort["me
   const ranksAt = (offset: number) => {
     const ranked = [...comparable].sort((left, right) => {
       const difference = (right[metric].at(offset) ?? 0) - (left[metric].at(offset) ?? 0);
-      return difference || left.club.short.localeCompare(right.club.short, "de");
+      return difference || left.club.name.localeCompare(right.club.name, "de");
     });
     const ranks = new Map<string, number>();
     let lastValue: number | undefined;
@@ -291,38 +299,10 @@ function strengthRankChanges(strengths: StrengthTeam[], metric: StrengthSort["me
   ]));
 }
 
-function formatPercent(value: number) {
-  return `${(value * 100).toLocaleString("de-DE", { maximumFractionDigits: 1 })} %`;
-}
-
-function formatOdds(value: number) {
-  return (1 / value).toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
-function formatIndex(value: number | undefined) {
-  if (value === undefined) return "-";
-  return value.toLocaleString("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-}
-
-function formatKickoff(value: string) {
-  if (!/^\d{4}-\d{2}-\d{2}T/.test(value)) return value;
-  return new Intl.DateTimeFormat("de-DE", {
-    weekday: "short", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
-    timeZone: "Europe/Berlin",
-  }).format(new Date(value)).replace(",", " ·");
-}
-
-function formatTimestamp(value: string) {
-  if (!/^\d{4}-\d{2}-\d{2}T/.test(value)) return value;
-  return new Intl.DateTimeFormat("de-DE", {
-    day: "2-digit", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit",
-    timeZone: "Europe/Berlin",
-  }).format(new Date(value));
-}
-
 export default function Home() {
+  const { t, language, formatPercent, formatIndex, formatTimestamp, formatRank, formatRange } = useLanguage();
   const [data, setData] = useState(previewData);
-  const focus = useMemo(() => selectFocusMatch(data.fixtures, data.placements), [data.fixtures, data.placements]);
+  const focus = useMemo(() => selectFocusMatch(data.fixtures, data.placements, language), [data.fixtures, data.placements, language]);
   const [historyFilter, setHistoryFilter] = useState<"all" | "hit" | "miss">("all");
   const [selectedHistoryKey, setSelectedHistoryKey] = useState<string | null>(null);
   const [selectedStrengthCode, setSelectedStrengthCode] = useState<string | null>(null);
@@ -382,7 +362,7 @@ export default function Home() {
     const leftValue = left[strengthSort.metric].at(-1) ?? 0;
     const rightValue = right[strengthSort.metric].at(-1) ?? 0;
     const difference = leftValue - rightValue;
-    if (difference === 0) return left.club.short.localeCompare(right.club.short, "de");
+    if (difference === 0) return left.club.name.localeCompare(right.club.name, "de");
     return strengthSort.direction === "desc" ? -difference : difference;
   }), [data.strengths, strengthSort]);
   const rankChanges = useMemo(
@@ -400,107 +380,108 @@ export default function Home() {
 
   return (
     <main>
-      <a className="skip-link" href="#spieltag">Zu den Prognosen</a>
+      <a className="skip-link" href="#spieltag">{t("Zu den Prognosen")}</a>
       <header className="site-header">
-        <a className="brand" href="#top" aria-label="Spielraum Startseite">
+        <a className="brand" href="#top" aria-label={t("Spielraum Startseite")}>
           <span className="brand-mark"><i /><i /><i /></span>
           <span>SPIELRAUM<small>Forecast Lab</small></span>
         </a>
-        <nav aria-label="Hauptnavigation">
-          <a href="#spieltag">Spieltag</a><a href="#historie">Historie</a><a href="#staerken">Teamstärken</a><a href="#tabelle">Saisonprognose</a><a href="#modell">Modell</a>
+        <nav aria-label={t("Hauptnavigation")}>
+          <a href="#spieltag">{t("Spieltag")}</a><a href="#historie">{t("Historie")}</a><a href="#staerken">{t("Teamstärken")}</a><a href="#tabelle">{t("Saisonprognose")}</a><a href="#modell">{t("Modell")}</a>
         </nav>
+        <LanguageSwitch />
       </header>
 
       <section className="hero" id="top">
         <div className="hero__copy">
-          <div className="eyebrow"><span className="season-label">Bundesliga {data.season}</span> Spieltag {data.matchday}</div>
-          <h1>Fußball im Bauch.<br /><em>Daten im Kopf.</em></h1>
-          <p>Dein Spieltag in Wahrscheinlichkeiten. Entdecke faire Quoten und verfolge die Form deines Teams.</p>
-          <a className="hero-link" href="#spieltag">Zu den Spieltagsprognosen <span aria-hidden="true">↗</span></a>
-          <div className="hero__meta"><span><b>1 X 2?</b> Alle Prognosen vor Anpfiff</span><span><b>50.000+</b> Saison-Simulationen</span><span><b>jeden Spieltag neu</b>ein Modell, das mitwächst</span></div>
+          <div className="eyebrow"><span className="season-label">Bundesliga {data.season}</span>{t(" Spieltag ")}{data.matchday}</div>
+          <h1>{t("Fußball im Bauch.")}<br /><em>{t("Daten im Kopf.")}</em></h1>
+          <p>{t("Dein Spieltag in Wahrscheinlichkeiten. Entdecke faire Quoten und verfolge die Form deines Teams.")}</p>
+          <a className="hero-link" href="#spieltag">{t("Zu den Spieltagsprognosen ")}<span aria-hidden="true">↗</span></a>
+          <div className="hero__meta"><span><b>1 X 2?</b>{t(" Alle Prognosen vor Anpfiff")}</span><span><b>{t("50.000+")}</b>{t(" Saison-Simulationen")}</span><span><b>{t("jeden Spieltag neu")}</b>{t("ein Modell, das mitwächst")}</span></div>
         </div>
-        <aside className="hero-forecast" aria-label="Spiel im Fokus">
-          <div className="hero-forecast__heading"><span>Spiel im Fokus</span><span>{data.mode === "preview" ? "Beispieldaten" : "Modellprognose"}</span></div>
+        <aside className="hero-forecast" aria-label={t("Spiel im Fokus")}>
+          <div className="hero-forecast__heading"><span>{t("Spiel im Fokus")}</span><span>{data.mode === "preview" ? t("Beispieldaten") : t("Modellprognose")}</span></div>
           {focus ? <>
             <MatchCard item={focus.item} featured />
             <div className="focus-story"><strong>{focus.title}</strong><p>{focus.reason}</p></div>
-          </> : <div className="fixture-empty">Die nächsten Begegnungen erscheinen, sobald der Spielplan verfügbar ist.</div>}
-          <p>1 = Heimsieg · X = Unentschieden · 2 = Auswärtssieg</p>
+          </> : <div className="fixture-empty">{t("Die nächsten Begegnungen erscheinen, sobald der Spielplan verfügbar ist.")}</div>}
+          <p>{t("1 = Heimsieg · X = Unentschieden · 2 = Auswärtssieg")}</p><p>{t("Alle Anstoßzeiten: Europe/Berlin")}</p>
         </aside>
       </section>
 
       <section className="section matchday-section" id="spieltag">
         <div className="section-heading">
-          <div><div><div className="eyebrow">Die weiteren Begegnungen · {data.season}</div><h2>Spieltag {data.matchday}<span className="heading-accent">.</span></h2></div></div>
-          <div className="data-stamp"><span>Datenstand</span><strong>{formatTimestamp(data.generatedAt)}</strong><small>{data.mode === "preview" ? "Beispieldaten. Produktiver Snapshot folgt" : "Schau wo dein Team steht"}</small></div>
+          <div><div><div className="eyebrow">{t("Die weiteren Begegnungen · ")}{data.season}</div><h2>{t("Spieltag ")}{data.matchday}<span className="heading-accent">.</span></h2></div></div>
+          <div className="data-stamp"><span>{t("Datenstand")}</span><strong>{formatTimestamp(data.generatedAt)}</strong><small>{data.mode === "preview" ? t("Beispieldaten. Produktiver Snapshot folgt") : t("Schau wo dein Team steht")}</small></div>
         </div>
         <div className="match-grid">{data.fixtures.filter((item) => item.id !== focus?.item.id).map((item, index) => <MatchCard item={item} index={index} key={item.id} />)}</div>
-        <p className="fair-note"><span>i</span> Faire Quote = 1 ÷ Modellwahrscheinlichkeit. Ohne Buchmachermarge, keine Wettberatung.</p>
+        <p className="fair-note"><span>i</span>{t(" Faire Quote = 1 ÷ Modellwahrscheinlichkeit. Ohne Buchmachermarge, keine Wettberatung.")}</p>
       </section>
 
       <section className="section history-section" id="historie">
         <div className="section-heading section-heading--compact">
-          <div><div><div className="eyebrow">Historische Prognosen</div><h2>Nach dem Abpfiff.</h2>{data.history.length > 0 && <div className="matchday-switcher matchday-switcher--heading" aria-label="Historischen Spieltag auswählen">
-            <button type="button" aria-label="Vorheriger Spieltag" disabled={activeHistoryIndex >= historyGroups.length - 1} onClick={() => setSelectedHistoryKey(historyGroups[activeHistoryIndex + 1]?.key ?? activeHistoryKey)}>←</button>
-            <div><strong>{activeHistoryGroup?.matchday ? `Spieltag ${activeHistoryGroup.matchday}` : "Archiv"}</strong>{activeHistoryGroup?.season && <small>{activeHistoryGroup.season}</small>}</div>
-            <button type="button" aria-label="Nächster Spieltag" disabled={activeHistoryIndex <= 0} onClick={() => setSelectedHistoryKey(historyGroups[activeHistoryIndex - 1]?.key ?? activeHistoryKey)}>→</button>
+          <div><div><div className="eyebrow">{t("Historische Prognosen")}</div><h2>{t("Nach dem Abpfiff.")}</h2>{data.history.length > 0 && <div className="matchday-switcher matchday-switcher--heading" aria-label={t("Historischen Spieltag auswählen")}>
+            <button type="button" aria-label={t("Vorheriger Spieltag")} disabled={activeHistoryIndex >= historyGroups.length - 1} onClick={() => setSelectedHistoryKey(historyGroups[activeHistoryIndex + 1]?.key ?? activeHistoryKey)}>←</button>
+            <div><strong>{activeHistoryGroup?.matchday ? `${t("Spieltag")} ${activeHistoryGroup.matchday}` : t("Archiv")}</strong>{activeHistoryGroup?.season && <small>{activeHistoryGroup.season}</small>}</div>
+            <button type="button" aria-label={t("Nächster Spieltag")} disabled={activeHistoryIndex <= 0} onClick={() => setSelectedHistoryKey(historyGroups[activeHistoryIndex - 1]?.key ?? activeHistoryKey)}>→</button>
           </div>}</div></div>
           {data.history.length > 0 && <div className="history-controls">
-            <div className="segmented-control" aria-label="Historie filtern">
-              {(["all", "hit", "miss"] as const).map((filter) => <button type="button" className={historyFilter === filter ? "active" : ""} aria-pressed={historyFilter === filter} onClick={() => setHistoryFilter(filter)} key={filter}>{filter === "all" ? "Alle" : filter === "hit" ? "Treffer" : "Überraschungen"}</button>)}
+            <div className="segmented-control" aria-label={t("Historie filtern")}>
+              {(["all", "hit", "miss"] as const).map((filter) => <button type="button" className={historyFilter === filter ? "active" : ""} aria-pressed={historyFilter === filter} onClick={() => setHistoryFilter(filter)} key={filter}>{filter === "all" ? t("Alle") : filter === "hit" ? t("Treffer") : t("Überraschungen")}</button>)}
             </div>
           </div>}
         </div>
         {data.history.length === 0 ? (
           <div className="history-empty">
-            <span>NOCH LEER</span>
-            <div><strong>Noch keine abgeschlossenen Live-Prognosen.</strong><p>Die erste Prognose für Spieltag 1 ist veröffentlicht. Nach Abpfiff erscheinen hier das Ergebnis und genau die Wahrscheinlichkeiten, die vorher festgeschrieben wurden.</p></div>
+            <span>{t("NOCH LEER")}</span>
+            <div><strong>{t("Noch keine abgeschlossenen Live-Prognosen.")}</strong><p>{t("Die erste Prognose für Spieltag 1 ist veröffentlicht. Nach Abpfiff erscheinen hier das Ergebnis und genau die Wahrscheinlichkeiten, die vorher festgeschrieben wurden.")}</p></div>
           </div>
         ) : filteredHistory.length > 0 ? (
           <div className="history-list">{filteredHistory.map((item) => <HistoryRow item={item} key={item.id} />)}</div>
         ) : (
           <div className="history-empty">
-            <span>KEINE TREFFER</span>
-            <div><strong>Für diesen Filter gibt es an diesem Spieltag keine Spiele.</strong><p>Wähle einen anderen Filter oder schalte zu einem anderen verfügbaren Spieltag.</p></div>
+            <span>{t("KEINE TREFFER")}</span>
+            <div><strong>{t("Für diesen Filter gibt es an diesem Spieltag keine Spiele.")}</strong><p>{t("Wähle einen anderen Filter oder schalte zu einem anderen verfügbaren Spieltag.")}</p></div>
           </div>
         )}
-        <div className="immutable-note"><span>Wir bleiben transparent</span><p>Jede Prognose kannst du einsehen. Die ursprüngliche Prognose bleibt unverändert.</p></div>
+        <div className="immutable-note"><span>{t("Wir bleiben transparent")}</span><p>{t("Jede Prognose kannst du einsehen. Die ursprüngliche Prognose bleibt unverändert.")}</p></div>
       </section>
 
       <section className="section strength-section" id="staerken">
         <div className="section-heading">
-          <div><div><div className="eyebrow">Dynamische Teamstärken</div><h2>Die Form dahinter.</h2>{data.mode === "preview" && <span className="preview-label">Illustrative Preview</span>}</div></div>
-          <p className="section-intro">Angriff und Abwehr entwickeln sich getrennt. Jeden Spieltag werden die Stärken neu geschätzt. Wo steht dein Team?</p>
+          <div><div><div className="eyebrow">{t("Dynamische Teamstärken")}</div><h2>{t("Die Form dahinter.")}</h2>{data.mode === "preview" && <span className="preview-label">Illustrative Preview</span>}</div></div>
+          <p className="section-intro">{t("Angriff und Abwehr entwickeln sich getrennt. Jeden Spieltag werden die Stärken neu geschätzt. Wo steht dein Team?")}</p>
         </div>
         <div className="strength-panel">
           <div className="strength-picker">
-            <div className="strength-sort" aria-label="Teamstärken sortieren">
+            <div className="strength-sort" aria-label={t("Teamstärken sortieren")}>
               {(["attack", "defense"] as const).map((metric) => {
                 const active = strengthSort.metric === metric;
-                const label = metric === "attack" ? "Angriff" : "Abwehr";
+                const label = metric === "attack" ? t("Angriff") : t("Abwehr");
                 return <button type="button" className={active ? "active" : ""} aria-pressed={active} onClick={() => toggleStrengthSort(metric)} key={metric}><span>{label}</span><b aria-hidden="true">{active ? strengthSort.direction === "desc" ? "↓" : "↑" : ""}</b></button>;
               })}
             </div>
-            {sortedStrengths.map((item) => <button type="button" key={item.club.code} className={item.club.code === selectedStrength?.club.code ? "active" : ""} aria-pressed={item.club.code === selectedStrength?.club.code} onClick={() => setSelectedStrengthCode(item.club.code)}><ClubMark club={item.club} size="small" /><span className="strength-team-name">{item.club.short}<RankTrend change={rankChanges.get(item.club.code)} /></span><b>{formatIndex(item[strengthSort.metric].at(-1))}</b></button>)}
+            {sortedStrengths.map((item) => <button type="button" key={item.club.code} className={item.club.code === selectedStrength?.club.code ? "active" : ""} aria-pressed={item.club.code === selectedStrength?.club.code} onClick={() => setSelectedStrengthCode(item.club.code)}><ClubMark club={item.club} size="small" /><span className="strength-team-name">{item.club.name}<RankTrend change={rankChanges.get(item.club.code)} /></span><b>{formatIndex(item[strengthSort.metric].at(-1))}</b></button>)}
           </div>
           {selectedStrength && <div className="strength-detail">
-            <div className="strength-title"><ClubMark club={selectedStrength.club} size="large" /><div><small>Aktueller {strengthSort.metric === "attack" ? "Angriffs" : "Abwehr"}index</small><h3>{selectedStrength.club.name}</h3></div><strong>{formatIndex(selectedStrengthValue)}</strong></div>
-            <div className="trend-row"><div><span className="legend-dot legend-dot--attack" />Angriff <b>{formatIndex(selectedStrength.attack.at(-1))}</b></div><TrendBars key={`${selectedStrength.club.code}-attack`} values={selectedStrength.attack} matchdays={selectedStrength.matchdays} label="Angriff" color="var(--attack)" /></div>
-            <div className="trend-row"><div><span className="legend-dot legend-dot--defense" />Abwehr <b>{formatIndex(selectedStrength.defense.at(-1))}</b></div><TrendBars key={`${selectedStrength.club.code}-defense`} values={selectedStrength.defense} matchdays={selectedStrength.matchdays} label="Abwehr" color="var(--defense)" /></div>
+            <div className="strength-title"><ClubMark club={selectedStrength.club} size="large" /><div><small>{language === "en" ? `Current ${strengthSort.metric === "attack" ? "attack" : "defence"} index` : `Aktueller ${strengthSort.metric === "attack" ? "Angriffs" : t("Abwehr")}index`}</small><h3>{selectedStrength.club.name}</h3></div><strong>{formatIndex(selectedStrengthValue)}</strong></div>
+            <div className="trend-row"><div><span className="legend-dot legend-dot--attack" />{t("Angriff ")}<b>{formatIndex(selectedStrength.attack.at(-1))}</b></div><TrendBars key={`${selectedStrength.club.code}-attack`} values={selectedStrength.attack} matchdays={selectedStrength.matchdays} label={t("Angriff")} color="var(--attack)" /></div>
+            <div className="trend-row"><div><span className="legend-dot legend-dot--defense" />{t("Abwehr ")}<b>{formatIndex(selectedStrength.defense.at(-1))}</b></div><TrendBars key={`${selectedStrength.club.code}-defense`} values={selectedStrength.defense} matchdays={selectedStrength.matchdays} label={t("Abwehr")} color="var(--defense)" /></div>
           </div>}
         </div>
       </section>
 
       <section className="section placements-section" id="tabelle">
         <div className="section-heading">
-          <div><div><div className="eyebrow">50.000 Saison-Simulationen</div><h2>Die Saison im Blick.</h2>{data.mode === "preview" && <span className="preview-label">Illustrative Preview</span>}</div></div>
-          <p className="section-intro">Auch wir haben keine Glaskugel, aber wir können die Verteilung möglicher Endplatzierungen simulieren. Gerade früh in der Saison ist Unsicherheit aber hoch, deshalb lieben wir Fußball</p>
+          <div><div><div className="eyebrow">{t("50.000 Saison-Simulationen")}</div><h2>{t("Die Saison im Blick.")}</h2>{data.mode === "preview" && <span className="preview-label">Illustrative Preview</span>}</div></div>
+          <p className="section-intro">{t("Auch wir haben keine Glaskugel, aber wir können die Verteilung möglicher Endplatzierungen simulieren. Gerade früh in der Saison ist Unsicherheit aber hoch, deshalb lieben wir Fußball")}</p>
         </div>
-        <div className="placement-table" role="region" aria-label="Saisonprognose, auf kleinen Bildschirmen horizontal scrollbar" tabIndex={0}>
-          <div className="placement-head"><span>Team</span><span>Median</span><span>80-%-Bereich</span><span>Meister</span><span>Top 4</span><span>Abstieg</span></div>
+        <div className="placement-table" role="region" aria-label={t("Saisonprognose, auf kleinen Bildschirmen horizontal scrollbar")} tabIndex={0}>
+          <div className="placement-head"><span>Team</span><span>Median</span><span>{t("80-%-Bereich")}</span><span>{t("Meister")}</span><span>Top 4</span><span>{t("Abstieg")}</span></div>
           {data.placements.map((item, index) => <div className="placement-row" key={item.club.code} style={{ "--delay": `${index * 70}ms` } as CSSProperties}>
-            <div><ClubMark club={item.club} size="small" /><strong>{item.club.short}</strong></div><b>{item.median}.</b>
-            <div className="range-track"><i style={{ left: `${(item.range[0] - 1) / 17 * 100}%`, width: `${(item.range[1] - item.range[0] + 1) / 18 * 100}%` }} /><span>{item.range[0]}. bis {item.range[1]}.</span></div>
+            <div><ClubMark club={item.club} size="small" /><strong>{item.club.name}</strong></div><b>{formatRank(item.median)}</b>
+            <div className="range-track"><i style={{ left: `${(item.range[0] - 1) / 17 * 100}%`, width: `${(item.range[1] - item.range[0] + 1) / 18 * 100}%` }} /><span>{formatRange(...item.range)}</span></div>
             <span>{formatPercent(item.title)}</span><span>{formatPercent(item.top4)}</span><span className={item.relegation > 0.1 ? "danger" : ""}>{formatPercent(item.relegation)}</span>
           </div>)}
         </div>
@@ -508,30 +489,30 @@ export default function Home() {
 
       <section className="section model-section" id="modell">
         <div className="section-heading">
-          <div><div><div className="eyebrow">Das Modell</div><h2>Wie die Prognose entsteht.</h2></div></div>
-          <a className="nerd-link" href="/nerds">Für Nerds <span>Statistical Deep Dive</span></a>
+          <div><div><div className="eyebrow">{t("Das Modell")}</div><h2>{t("Wie die Prognose entsteht.")}</h2></div></div>
+          <a className="nerd-link" href="/nerds">{t("Für Nerds ")}<span>Statistical Deep Dive</span></a>
         </div>
         <div className="model-showcase">
-          <aside className="model-signal" aria-label="Animierte Darstellung der aktiven Modell-Policy">
+          <aside className="model-signal" aria-label={t("Animierte Darstellung der aktiven Modell-Policy")}>
             <div className="model-signal__orbit"><span>V2</span><i /><i /><i /></div>
-            <div><small>Aktive Policy</small><strong>Carry → Fresh</strong><p>Mischung aus Vorsaison und aktueller Saison</p></div>
+            <div><small>{t("Aktive Policy")}</small><strong>Carry → Fresh</strong><p>{t("Mischung aus Vorsaison und aktueller Saison")}</p></div>
           </aside>
           <div className="mechanics-grid">
-            <article><h3>Erfahrung</h3><p>Das Modell nutzt Wissen aus vergangenen Saisons um Teams besser einzuschätzen.</p><div className="mini-policy"><i /><i /><i /><i /><i /></div></article>
-            <article><h3>Gegenwart</h3><p>Mit jedem neuen Spiel gewinnt die aktuelle Saison an Gewicht. Vergangene Stärke tritt Schritt für Schritt zurück.</p><div className="fresh-pulse"><i /><i /><i /></div></article>
-            <article><h3>Spielqualität</h3><p>Das Modell schaut tiefer als nur auf Sieg oder Niederlage und trennt nachhaltige Leistung von kurzfristigem Ergebnisglück.</p><div className="signal-flow">{[18, 42, 28, 66, 38, 82, 54].map((v, i) => <i style={{ height: `${v}%` }} key={i} />)}</div></article>
+            <article><h3>{t("Erfahrung")}</h3><p>{t("Das Modell nutzt Wissen aus vergangenen Saisons um Teams besser einzuschätzen.")}</p><div className="mini-policy"><i /><i /><i /><i /><i /></div></article>
+            <article><h3>{t("Gegenwart")}</h3><p>{t("Mit jedem neuen Spiel gewinnt die aktuelle Saison an Gewicht. Vergangene Stärke tritt Schritt für Schritt zurück.")}</p><div className="fresh-pulse"><i /><i /><i /></div></article>
+            <article><h3>{t("Spielqualität")}</h3><p>{t("Das Modell schaut tiefer als nur auf Sieg oder Niederlage und trennt nachhaltige Leistung von kurzfristigem Ergebnisglück.")}</p><div className="signal-flow">{[18, 42, 28, 66, 38, 82, 54].map((v, i) => <i style={{ height: `${v}%` }} key={i} />)}</div></article>
           </div>
         </div>
         <div className="backtest-card">
-          <div><div className="eyebrow">Wir gegen die Buchmacher · 2010/11-2025/26</div><h3>Nah am Markt. </h3><p>Der RPS misst die Qualität der vollständigen 1-X-2-Verteilung. Niedriger ist besser.</p></div>
-          <div className="backtest-bars"><div><span>Unser V2</span><i><b style={{ width: "97%" }} /></i><strong>0,19797</strong></div><div><span>Buchmacher</span><i><b style={{ width: "94%" }} /></i><strong>0,19204</strong></div><small>Relativer Abstand: 3,1 %</small></div>
+          <div><div className="eyebrow">{t("Wir gegen die Buchmacher · 2010/11-2025/26")}</div><h3>{t("Nah am Markt. ")}</h3><p>{t("Der RPS misst die Qualität der vollständigen 1-X-2-Verteilung. Niedriger ist besser.")}</p></div>
+          <div className="backtest-bars"><div><span>{t("Unser V2")}</span><i><b style={{ width: "97%" }} /></i><strong>{t("0,19797")}</strong></div><div><span>{t("Buchmacher")}</span><i><b style={{ width: "94%" }} /></i><strong>{t("0,19204")}</strong></div><small>{t("Relativer Abstand: 3,1 %")}</small></div>
         </div>
       </section>
 
       <footer>
         <a className="brand" href="#top"><span className="brand-mark"><i /><i /><i /></span><span>SPIELRAUM<small>Forecast Lab</small></span></a>
-        <p>Ein unabhängiges Portfolio-Projekt über probabilistische Fußballprognosen. Wahrscheinlichkeiten sind keine Gewissheiten. Genau das macht sie interessant.</p>
-        <div><span>Modell V2.1</span><span>Bayesian</span><span>Pi powered</span><a href="https://github.com/Avonik/spielraum" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href="https://juhermes.de/" target="_blank" rel="noopener noreferrer">juhermes.de ↗</a></div>
+        <p>{t("Ein unabhängiges Portfolio-Projekt über probabilistische Fußballprognosen. Wahrscheinlichkeiten sind keine Gewissheiten. Genau das macht sie interessant.")}</p>
+        <div><span>{t("Modell V2.1")}</span><span>Bayesian</span><span>Pi powered</span><a href="https://github.com/Avonik/spielraum" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href="https://juhermes.de/" target="_blank" rel="noopener noreferrer">juhermes.de ↗</a></div>
       </footer>
     </main>
   );

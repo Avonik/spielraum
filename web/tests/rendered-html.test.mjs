@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-async function render(path = "/") {
+async function render(path = "/", language = "de") {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
   workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
   const { default: worker } = await import(workerUrl.href);
 
   return worker.fetch(
-    new Request(`http://localhost${path}`, { headers: { accept: "text/html" } }),
+    new Request(`http://localhost${path}`, { headers: { accept: "text/html", cookie: `spielraum-language=${language}` } }),
     { ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) } },
     { waitUntil() {}, passThroughOnException() {} },
   );
@@ -54,6 +54,40 @@ test("server-renders the forecast dashboard", async () => {
   assert.doesNotMatch(html, /\/club-marks\/|club-mark--diamond|club-mark--circle/);
   assert.doesNotMatch(html, /Keine offiziellen Vereinswappen|Real xG|–/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton/i);
+});
+
+test("server-renders English predictions with localised labels and formats", async () => {
+  const response = await render("/", "en");
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  const main = html.match(/<main[\s\S]*?<\/main>/)?.[0] ?? "";
+  assert.match(html, /<html lang="en"/);
+  assert.match(main, /Football at heart/);
+  assert.match(main, /Too close to call/);
+  assert.match(main, /50,000/);
+  assert.match(main, /1 · Home/);
+  assert.match(main, /Odds <!-- -->2\.63/);
+  assert.match(main, /Rank (?:up|down) \d+ places?/);
+  assert.match(main, /Current attack index/);
+  assert.match(main, /0\.19797/);
+  assert.doesNotMatch(main, /Spieltag|Siegchance|Angriff|Abwehr|Heimsieg|Saisonprognose|0,19797/);
+});
+
+test("server-renders English maths and preserves the research citation", async () => {
+  const response = await render("/nerds", "en");
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  const main = html.match(/<main[\s\S]*?<\/main>/)?.[0] ?? "";
+  assert.match(html, /<html lang="en"/);
+  assert.match(main, /What does a model know/);
+  assert.match(main, /144 historical pseudo-matches/);
+  assert.match(main, /0\.06²/);
+  assert.match(main, /ε = 0\.2/);
+  assert.match(main, /κ = 0\.10/);
+  assert.match(main, /0\.50 = 2\.00/);
+  assert.match(main, /10\.1111\/1467-9884\.00243/);
+  assert.equal((main.match(/<details class="deep-dive">/g) ?? []).length, 6);
+  assert.doesNotMatch(main, /Spieltag|Vorwissen|Abwehr|Saisonprognose|Sommer|Öffnet|0,06/);
 });
 
 test("server-renders the statistical deep dive", async () => {

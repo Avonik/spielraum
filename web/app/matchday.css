@@ -344,3 +344,24 @@ footer > div span { border: 0; padding: 0; font-size: 12px; border-radius: 0; co
   footer > div a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: underline; text-underline-offset: 4px; }
   footer > div { gap: 8px 20px; }
 }
+
+.language-switch { display: inline-flex; flex: none; padding: 3px; border: 1px solid #ffffff55; border-radius: 6px; gap: 2px; }
+.language-switch button { min-width: 40px; min-height: 38px; padding: 6px 9px; background: transparent; color: #d3dfd7; border: 0; border-radius: 3px; font: 600 14px var(--body); cursor: pointer; }
+.language-switch button[aria-pressed="true"] { background: var(--acid); color: #09251d; }
+.language-switch button:hover { background: #ffffff20; color: white; }
+.language-switch button[aria-pressed="true"]:hover { background: var(--acid); color: #09251d; }
+.language-switch button:focus-visible { outline: 2px solid white; outline-offset: 2px; }
+.site-header { gap: 18px; }
+.nerd-topbar .language-switch { order: 3; margin-left: 20px; }
+.nerd-topbar .back-link { margin-left: auto; }
+@media (max-width: 1100px) {
+  .site-header .language-switch { margin-left: auto; }
+}
+@media (max-width: 800px) {
+  .language-switch button { min-height: 44px; }
+  html[lang="en"] .placement-table::before { content: "Swipe sideways for more columns ↔"; }
+  html[lang="en"] .score-comparison::before { content: "Swipe sideways to see all values ↔"; }
+  .nerd-topbar { height: auto; min-height: 88px; flex-wrap: wrap; gap: 12px; padding-block: 16px; }
+  .nerd-topbar .language-switch { order: 1; margin-left: auto; }
+  .nerd-topbar .back-link { order: 2; margin-left: 0; }
+}

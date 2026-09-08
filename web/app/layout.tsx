@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
+import { LanguageProvider } from "./language";
 import "./fonts.css";
 import "./globals.css";
 import "./matchday.css";
 import "./nerds/nerds.css";
 
-export const metadata: Metadata = {
+const baseMetadata: Metadata = {
   title: "Spielraum | Bundesliga Forecast Lab",
   description: "Bayesianische Bundesliga-Prognosen, faire Quoten, Teamstärken und historische Forecasts.",
   openGraph: {
@@ -17,9 +19,17 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", images: ["/og.png"] },
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="de"><head>
+export async function generateMetadata(): Promise<Metadata> {
+  const language = (await cookies()).get("spielraum-language")?.value === "en" ? "en" : "de";
+  if (language === "de") return baseMetadata;
+  const description = "Bayesian Bundesliga predictions, fair odds, team strengths and historical forecasts.";
+  return { ...baseMetadata, description, openGraph: { ...baseMetadata.openGraph, description, locale: "en_GB" } };
+}
+
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const language = (await cookies()).get("spielraum-language")?.value === "en" ? "en" : "de";
+  return <html lang={language}><head>
     <link rel="preload" href="/fonts/barlow-400.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
     <link rel="preload" href="/fonts/barlow-condensed-700.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
-  </head><body>{children}</body></html>;
+  </head><body><LanguageProvider initialLanguage={language}>{children}</LanguageProvider></body></html>;
 }
