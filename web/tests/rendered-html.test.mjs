@@ -31,7 +31,9 @@ test("server-renders the forecast dashboard", async () => {
   assert.match(html, /Wie die Prognose entsteht/);
   assert.match(html, /F.r Nerds/);
   assert.match(html, /hero-forecast/);
-  assert.match(html, /Erste Begegnung des Spieltags/);
+  assert.match(html, /Spiel im Fokus/);
+  assert.match(html, /Duell auf Augenh.he/);
+  assert.doesNotMatch(html, /status-chip|Live-Modell/);
   assert.match(html, /1 · Heim/);
   assert.match(html, /X · Remis/);
   assert.match(html, /2 · Gast/);
@@ -66,5 +68,13 @@ test("server-renders the statistical deep dive", async () => {
   assert.match(html, /Ranked Probability Score/);
   assert.match(html, /144 historische Pseudospiele/);
   assert.match(html, /0,19797/);
-  assert.doesNotMatch(html, /–/);
+  assert.match(html, /Was weiß ein Modell/);
+  assert.match(html, /https:\/\/doi\.org\/10\.1111\/1467-9884\.00243/);
+  assert.match(html, /Prediction and Retrospective Analysis of Soccer Matches in a League/);
+  assert.equal((html.match(/<details class="deep-dive">/g) ?? []).length, 6);
+  for (const chapter of ["state", "likelihood", "priors", "transition", "inference", "score"]) {
+    assert.ok(html.includes(`href="#${chapter}"`));
+    assert.ok(html.includes(`id="${chapter}"`));
+  }
+  assert.match(html, /<caption>Modell und Markt im Vergleich/);
 });

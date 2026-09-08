@@ -1,6 +1,7 @@
 "use client";
 
 import { CSSProperties, useEffect, useMemo, useState } from "react";
+import { selectFocusMatch } from "./focus-match";
 
 type Club = {
   name: string;
@@ -321,6 +322,7 @@ function formatTimestamp(value: string) {
 
 export default function Home() {
   const [data, setData] = useState(previewData);
+  const focus = useMemo(() => selectFocusMatch(data.fixtures, data.placements), [data.fixtures, data.placements]);
   const [historyFilter, setHistoryFilter] = useState<"all" | "hit" | "miss">("all");
   const [selectedHistoryKey, setSelectedHistoryKey] = useState<string | null>(null);
   const [selectedStrengthCode, setSelectedStrengthCode] = useState<string | null>(null);
@@ -407,20 +409,22 @@ export default function Home() {
         <nav aria-label="Hauptnavigation">
           <a href="#spieltag">Spieltag</a><a href="#historie">Historie</a><a href="#staerken">Teamstärken</a><a href="#tabelle">Saisonprognose</a><a href="#modell">Modell</a>
         </nav>
-        <div className={`status-chip ${data.mode === "live" ? "status-chip--live" : ""}`}><i />{data.mode === "live" ? "Live-Modell" : "Preview"}</div>
       </header>
 
       <section className="hero" id="top">
         <div className="hero__copy">
           <div className="eyebrow"><span className="season-label">Bundesliga {data.season}</span> Spieltag {data.matchday}</div>
-          <h1>Fußball fühlen.<br /><em>Chancen kennen.</em></h1>
-          <p>Dein Spieltag in Wahrscheinlichkeiten. Entdecke die Favoriten, vergleiche faire Quoten und verfolge die Form deines Teams.</p>
+          <h1>Fußball im Bauch.<br /><em>Daten im Kopf.</em></h1>
+          <p>Dein Spieltag in Wahrscheinlichkeiten. Entdecke faire Quoten und verfolge die Form deines Teams.</p>
           <a className="hero-link" href="#spieltag">Zu den Spieltagsprognosen <span aria-hidden="true">↗</span></a>
-          <div className="hero__meta"><span><b>1 · X · 2</b> Alle Spielausgänge</span><span><b>50.000</b> Saison-Simulationen</span><span><b>V2.1</b> Bayesianisches Modell</span></div>
+          <div className="hero__meta"><span><b>1 X 2?</b> Alle Prognosen vor Anpfiff</span><span><b>50.000+</b> Saison-Simulationen</span><span><b>jeden Spieltag neu</b>ein Modell, das mitwächst</span></div>
         </div>
-        <aside className="hero-forecast" aria-label="Erste Begegnung des Spieltags">
-          <div className="hero-forecast__heading"><span>Die erste Begegnung</span><span>{data.mode === "preview" ? "Beispieldaten" : "Modellprognose"}</span></div>
-          {data.fixtures[0] ? <MatchCard item={data.fixtures[0]} featured /> : <div className="fixture-empty">Die nächsten Begegnungen erscheinen, sobald der Spielplan verfügbar ist.</div>}
+        <aside className="hero-forecast" aria-label="Spiel im Fokus">
+          <div className="hero-forecast__heading"><span>Spiel im Fokus</span><span>{data.mode === "preview" ? "Beispieldaten" : "Modellprognose"}</span></div>
+          {focus ? <>
+            <MatchCard item={focus.item} featured />
+            <div className="focus-story"><strong>{focus.title}</strong><p>{focus.reason}</p></div>
+          </> : <div className="fixture-empty">Die nächsten Begegnungen erscheinen, sobald der Spielplan verfügbar ist.</div>}
           <p>1 = Heimsieg · X = Unentschieden · 2 = Auswärtssieg</p>
         </aside>
       </section>
@@ -428,9 +432,9 @@ export default function Home() {
       <section className="section matchday-section" id="spieltag">
         <div className="section-heading">
           <div><div><div className="eyebrow">Die weiteren Begegnungen · {data.season}</div><h2>Spieltag {data.matchday}<span className="heading-accent">.</span></h2></div></div>
-          <div className="data-stamp"><span>Datenstand</span><strong>{formatTimestamp(data.generatedAt)}</strong><small>{data.mode === "preview" ? "Beispieldaten. Produktiver Snapshot folgt" : "Historisch veröffentlicht"}</small></div>
+          <div className="data-stamp"><span>Datenstand</span><strong>{formatTimestamp(data.generatedAt)}</strong><small>{data.mode === "preview" ? "Beispieldaten. Produktiver Snapshot folgt" : "Schau wo dein Team steht"}</small></div>
         </div>
-        <div className="match-grid">{data.fixtures.slice(1).map((item, index) => <MatchCard item={item} index={index} key={item.id} />)}</div>
+        <div className="match-grid">{data.fixtures.filter((item) => item.id !== focus?.item.id).map((item, index) => <MatchCard item={item} index={index} key={item.id} />)}</div>
         <p className="fair-note"><span>i</span> Faire Quote = 1 ÷ Modellwahrscheinlichkeit. Ohne Buchmachermarge, keine Wettberatung.</p>
       </section>
 
@@ -460,13 +464,13 @@ export default function Home() {
             <div><strong>Für diesen Filter gibt es an diesem Spieltag keine Spiele.</strong><p>Wähle einen anderen Filter oder schalte zu einem anderen verfügbaren Spieltag.</p></div>
           </div>
         )}
-        <div className="immutable-note"><span>LOCK</span><p>Jede Prognose erhält Zeitstempel, Modellversion und Daten-Cutoff. Ergebnisse werden später separat ergänzt. Die ursprüngliche Prognose bleibt unverändert.</p></div>
+        <div className="immutable-note"><span>Wir bleiben transparent</span><p>Jede Prognose kannst du einsehen. Die ursprüngliche Prognose bleibt unverändert.</p></div>
       </section>
 
       <section className="section strength-section" id="staerken">
         <div className="section-heading">
           <div><div><div className="eyebrow">Dynamische Teamstärken</div><h2>Die Form dahinter.</h2>{data.mode === "preview" && <span className="preview-label">Illustrative Preview</span>}</div></div>
-          <p className="section-intro">Angriff und Abwehr entwickeln sich getrennt. Neue Spieldaten aktualisieren die latente Stärke, ohne einzelne Ergebnisse überzubewerten.</p>
+          <p className="section-intro">Angriff und Abwehr entwickeln sich getrennt. Jeden Spieltag werden die Stärken neu geschätzt. Wo steht dein Team?</p>
         </div>
         <div className="strength-panel">
           <div className="strength-picker">
@@ -490,7 +494,7 @@ export default function Home() {
       <section className="section placements-section" id="tabelle">
         <div className="section-heading">
           <div><div><div className="eyebrow">50.000 Saison-Simulationen</div><h2>Die Saison im Blick.</h2>{data.mode === "preview" && <span className="preview-label">Illustrative Preview</span>}</div></div>
-          <p className="section-intro">Keine Punktprognose, sondern eine Verteilung möglicher Endplatzierungen. Gerade früh in der Saison ist Unsicherheit ein Ergebnis, kein Fehler.</p>
+          <p className="section-intro">Auch wir haben keine Glaskugel, aber wir können die Verteilung möglicher Endplatzierungen simulieren. Gerade früh in der Saison ist Unsicherheit aber hoch, deshalb lieben wir Fußball</p>
         </div>
         <div className="placement-table" role="region" aria-label="Saisonprognose, auf kleinen Bildschirmen horizontal scrollbar" tabIndex={0}>
           <div className="placement-head"><span>Team</span><span>Median</span><span>80-%-Bereich</span><span>Meister</span><span>Top 4</span><span>Abstieg</span></div>
@@ -510,16 +514,16 @@ export default function Home() {
         <div className="model-showcase">
           <aside className="model-signal" aria-label="Animierte Darstellung der aktiven Modell-Policy">
             <div className="model-signal__orbit"><span>V2</span><i /><i /><i /></div>
-            <div><small>Aktive Policy</small><strong>Carry → Fresh</strong><p>144 historische Pseudospiele stabilisieren den Saisonstart.</p></div>
+            <div><small>Aktive Policy</small><strong>Carry → Fresh</strong><p>Mischung aus Vorsaison und aktueller Saison</p></div>
           </aside>
           <div className="mechanics-grid">
-            <article><h3>Erfahrung</h3><p>Was wir zuletzt über ein Team gelernt haben, verschwindet im Sommer nicht einfach, wird aber vorsichtiger gewichtet.</p><div className="mini-policy"><i /><i /><i /><i /><i /></div></article>
+            <article><h3>Erfahrung</h3><p>Das Modell nutzt Wissen aus vergangenen Saisons um Teams besser einzuschätzen.</p><div className="mini-policy"><i /><i /><i /><i /><i /></div></article>
             <article><h3>Gegenwart</h3><p>Mit jedem neuen Spiel gewinnt die aktuelle Saison an Gewicht. Vergangene Stärke tritt Schritt für Schritt zurück.</p><div className="fresh-pulse"><i /><i /><i /></div></article>
             <article><h3>Spielqualität</h3><p>Das Modell schaut tiefer als nur auf Sieg oder Niederlage und trennt nachhaltige Leistung von kurzfristigem Ergebnisglück.</p><div className="signal-flow">{[18, 42, 28, 66, 38, 82, 54].map((v, i) => <i style={{ height: `${v}%` }} key={i} />)}</div></article>
           </div>
         </div>
         <div className="backtest-card">
-          <div><div className="eyebrow">High-Budget-Backtest · 2023/24-2025/26</div><h3>Nah am Markt. Nicht gleich gut.</h3><p>Der RPS misst die Qualität der vollständigen 1-X-2-Verteilung. Niedriger ist besser.</p></div>
+          <div><div className="eyebrow">Wir gegen die Buchmacher · 2010/11-2025/26</div><h3>Nah am Markt. </h3><p>Der RPS misst die Qualität der vollständigen 1-X-2-Verteilung. Niedriger ist besser.</p></div>
           <div className="backtest-bars"><div><span>Unser V2</span><i><b style={{ width: "97%" }} /></i><strong>0,19797</strong></div><div><span>Buchmacher</span><i><b style={{ width: "94%" }} /></i><strong>0,19204</strong></div><small>Relativer Abstand: 3,1 %</small></div>
         </div>
       </section>
@@ -527,7 +531,7 @@ export default function Home() {
       <footer>
         <a className="brand" href="#top"><span className="brand-mark"><i /><i /><i /></span><span>SPIELRAUM<small>Forecast Lab</small></span></a>
         <p>Ein unabhängiges Portfolio-Projekt über probabilistische Fußballprognosen. Wahrscheinlichkeiten sind keine Gewissheiten. Genau das macht sie interessant.</p>
-        <div><span>Modell V2.1</span><span>Bayesian</span><span>Pi powered</span></div>
+        <div><span>Modell V2.1</span><span>Bayesian</span><span>Pi powered</span><a href="https://github.com/Avonik/spielraum" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href="https://juhermes.de/" target="_blank" rel="noopener noreferrer">juhermes.de ↗</a></div>
       </footer>
     </main>
   );

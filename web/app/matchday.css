@@ -43,6 +43,9 @@ h1 em { color: var(--acid); -webkit-text-stroke: 0; }
 .hero-forecast__heading { display: flex; justify-content: space-between; gap: 12px; color: #dce7df; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 20px; }
 .hero-forecast__heading > span:last-child { color: var(--acid); }
 .hero-forecast > p { color: #cad8cf; font-size: 12px; margin: 18px 0 0; }
+.focus-story { margin-top: 18px; padding-left: 14px; border-left: 2px solid var(--acid); }
+.focus-story > strong { color: var(--acid); font-size: 16px; }
+.focus-story > p { margin: 6px 0 0; color: #dce7df; font-size: 14px; line-height: 1.6; }
 .fixture-empty { padding: 24px 0; border-block: 1px solid #ffffff30; line-height: 1.6; }
 
 /* The same heading rail and content edge continue through every topic. */
