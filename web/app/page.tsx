@@ -3,6 +3,7 @@
 import { CSSProperties, useEffect, useMemo, useState } from "react";
 import { useLanguage, LanguageSwitch } from "./language";
 import { selectFocusMatch } from "./focus-match";
+import { ProviderBanner } from "./provider-banner";
 
 type Club = {
   name: string;
@@ -51,6 +52,7 @@ type Placement = {
 };
 
 type DashboardData = {
+  understatStatus?: { available: boolean; checkedAt: string } | null;
   mode: "preview" | "live";
   generatedAt: string;
   season: string;
@@ -391,6 +393,8 @@ export default function Home() {
         </nav>
         <LanguageSwitch />
       </header>
+
+      <ProviderBanner status={data.understatStatus} />
 
       <section className="hero" id="top">
         <div className="hero__copy">

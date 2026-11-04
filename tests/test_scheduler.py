@@ -5,12 +5,13 @@ import os
 import subprocess
 import tempfile
 import unittest
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from unittest.mock import patch
 
 from spielraum.config import Settings
-from spielraum.scheduler import run_job
-from spielraum.storage import connect, initialize
+from spielraum.scheduler import run_job, tick
+from spielraum.storage import connect, finish_run, initialize, read_dashboard, start_run
 
 
 class SchedulerTests(unittest.TestCase):
@@ -53,6 +54,44 @@ class SchedulerTests(unittest.TestCase):
             "season_complete": True,
         })
         self.assertEqual(status, "success")
+
+    def test_understat_outage_persists_until_data_recovers(self):
+        self.assertIsNone(read_dashboard(self.settings.database_path)["understatStatus"])
+        with patch.dict(os.environ, {"SPIELRAUM_UNDERSTAT_COMMAND": ""}):
+            for available in (False, True, False):
+                # Ignore logs before the adapter's final JSON line.
+                completed = subprocess.CompletedProcess(
+                    args=[], returncode=0, stdout='fetching data\n' + json.dumps({"available": available}), stderr=""
+                )
+                with patch("spielraum.scheduler.subprocess.run", return_value=completed) as run:
+                    self.assertEqual(run_job(self.settings, "understat"), "success" if available else "failed")
+                self.assertEqual(run.call_args.args[0][-1], "spielraum.adapters.understat_status")
+                self.assertEqual(run.call_args.kwargs["timeout"], 180)
+                status = read_dashboard(self.settings.database_path)["understatStatus"]
+                self.assertEqual(status["available"], available)
+                self.assertIsNotNone(status["checkedAt"])
+                # An in-flight check and unrelated model errors must not hide an outage
+                # or falsely label a working provider as unavailable.
+                start_run(self.settings.database_path, "understat", "2026-11-04T00:00:00+00:00")
+                model = start_run(self.settings.database_path, "model", "2026-11-04T00:00:00+00:00")
+                finish_run(self.settings.database_path, model, "2026-11-04T00:01:00+00:00", "failed", {"error": "model error"})
+                self.assertEqual(read_dashboard(self.settings.database_path)["understatStatus"], status)
+
+    def test_understat_checks_continue_outside_weekly_model_window(self):
+        thursday = datetime(2026, 11, 5, 12, tzinfo=UTC)
+        with patch("spielraum.scheduler._now", return_value=thursday) as now, patch(
+            "spielraum.scheduler.run_job", return_value="success"
+        ) as run:
+            tick(self.settings)
+            run.assert_any_call(self.settings, "understat")
+            self.assertNotIn("model", [call.args[1] for call in run.call_args_list])
+            run.reset_mock()
+            now.return_value = thursday + timedelta(minutes=29)
+            tick(self.settings)
+            run.assert_not_called()
+            now.return_value = thursday + timedelta(minutes=30)
+            tick(self.settings)
+            run.assert_called_once_with(self.settings, "understat")
 
 
 if __name__ == "__main__":

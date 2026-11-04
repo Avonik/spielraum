@@ -1,5 +1,7 @@
 // German copy is the source text, so existing editorial wording stays intact.
 export const english: Record<string, string> = {
+  "Understat-API derzeit nicht verfügbar.": "Understat API is currently unavailable.",
+  "Neue xG-Daten fehlen vorübergehend. Wir zeigen weiterhin die zuletzt veröffentlichten Prognosen.": "New xG data is temporarily unavailable. We continue to show the last published forecasts.",
   "Quote": "Odds", "Im Fokus": "Featured", "Heim": "Home", "Auswärts": "Away",
   "1 · Heim": "1 · Home", "X · Remis": "X · Draw", "2 · Gast": "2 · Away",
   "Prognose": "Prediction", "Noch keine Werte vorhanden.": "No data available yet.",

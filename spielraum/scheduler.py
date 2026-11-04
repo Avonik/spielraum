@@ -4,6 +4,7 @@ import json
 import os
 import shlex
 import subprocess
+import sys
 import time
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -35,6 +36,8 @@ def run_job(settings: Settings, job: str) -> str:
     started = _now()
     run_id = start_run(settings.database_path, job, started.isoformat())
     command = _command_for(job)
+    if job == "understat" and command is None:
+        command = [sys.executable, "-m", "spielraum.adapters.understat_status"]
     if not command:
         finish_run(settings.database_path, run_id, _now().isoformat(), "skipped", {"reason": "command not configured"})
         return "skipped"
@@ -45,10 +48,14 @@ def run_job(settings: Settings, job: str) -> str:
             check=True,
             capture_output=True,
             text=True,
-            timeout=60 * 90,
+            timeout=180 if job == "understat" else 60 * 90,
         )
         lines = [line for line in completed.stdout.splitlines() if line.strip()]
         payload = json.loads(lines[-1]) if lines else {}
+        if job == "understat":
+            status = "success" if payload.get("available") is True else "failed"
+            finish_run(settings.database_path, run_id, _now().isoformat(), status, payload)
+            return status
         if job == "model" and not (
             payload.get("matchday_complete")
             and payload.get("xg_complete")
@@ -119,6 +126,10 @@ def _mark_attempt(settings: Settings, job: str, status: str) -> None:
 def tick(settings: Settings) -> None:
     now = _now()
     local = now.astimezone(ZoneInfo(settings.timezone))
+    understat_state = _state(settings, "understat")
+    if understat_state is None or now - understat_state["attempt"] >= timedelta(minutes=30):
+        _mark_attempt(settings, "understat", run_job(settings, "understat"))
+
     match_window = (
         (local.weekday() == 4 and local.hour >= 18)
         or (local.weekday() in {5, 6} and 13 <= local.hour <= 23)

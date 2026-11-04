@@ -39,6 +39,10 @@ main { overflow: hidden; }
 .status-chip i, .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #f2a63b; box-shadow: 0 0 0 4px rgba(242, 166, 59, 0.16); }
 .status-chip--live i { background: #4fba61; animation: pulse 1.8s infinite; }
 
+.provider-banner { display: flex; align-items: flex-start; gap: 12px; padding: 14px clamp(22px, 4vw, 72px); background: #fff0d9; color: #583b12; border-bottom: 1px solid #e9c58c; font-size: 14px; line-height: 1.5; }
+.provider-banner p { margin: 0; }
+.provider-banner__icon { flex: 0 0 20px; height: 20px; margin-top: 1px; display: grid; place-items: center; border: 1px solid currentColor; border-radius: 50%; font-weight: 700; font-size: 12px; }
+
 .hero { min-height: 660px; display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(480px, .88fr); gap: 4px; padding: 82px clamp(22px, 6vw, 112px) 74px; position: relative; border-bottom: 1px solid var(--line); }
 .hero::before { content: ""; position: absolute; width: 620px; height: 620px; border: 1px solid rgba(18,20,17,.1); border-radius: 50%; right: -250px; top: -190px; box-shadow: 0 0 0 80px rgba(18,20,17,.02), 0 0 0 160px rgba(18,20,17,.015); }
 .hero__copy { max-width: 880px; position: relative; z-index: 2; animation: reveal 650ms ease both; }

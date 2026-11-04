@@ -8,6 +8,7 @@ Pi-first Portfolio-Webseite für das Bundesliga-V2-Modell. Der aktuelle Stand um
 - `spielraum/`: FastAPI, SQLite-Schema, Publishing- und Scheduling-Layer.
 - `runtime/`: persistente SQLite-Datei und architekturunabhängige JSON/NPZ-Artefakte; wird nicht committed.
 - `scheduler`: OpenLigaDB-Spielplan und Ergebnisse während der Spielzeiten alle 30 Minuten; V2-Modell montags 03:30 Uhr in `Europe/Berlin`.
+- Der Scheduler prüft zusätzlich alle 30 Minuten den aktuellen Understat-xG-Feed, auch außerhalb des Modell-Retryfensters. Bei Ausfällen zeigt das Dashboard einen Hinweis in Deutsch oder Englisch; nach einem erfolgreichen Datenabruf verschwindet er beim nächsten Dashboard-Refresh (alle fünf Minuten). HTTP-200-Wartungsseiten gelten als Ausfall. Die letzten veröffentlichten Prognosen bleiben sichtbar.
 - `Caddy`: ein öffentlicher Entry-Point, später automatisch mit HTTPS bei einem echten Domainnamen.
 
 SQLite läuft im WAL-Modus mit genau einem schreibenden Scheduler. `predictions`, veröffentlichte Snapshots, Teamstärken und Platzierungsprognosen sind per Datenbank-Trigger append-only. Nach Anpfiff kann für ein Spiel keine neue Prognose gespeichert werden. Ergebnisse werden separat ergänzt und sind nach Status `finished` ebenfalls gesperrt.

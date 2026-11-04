@@ -86,6 +86,11 @@ def read_dashboard(path: str | Path) -> dict[str, Any]:
             "SELECT id, published_at, mode FROM published_snapshots WHERE season = ? ORDER BY published_at DESC LIMIT 1",
             (season,),
         ).fetchone()
+        understat_run = connection.execute(
+            """SELECT status, finished_at FROM pipeline_runs
+               WHERE job = 'understat' AND status IN ('success', 'failed')
+               ORDER BY id DESC LIMIT 1"""
+        ).fetchone()
 
         fixtures = [] if snapshot is None else connection.execute(
             f"""
@@ -193,6 +198,10 @@ def read_dashboard(path: str | Path) -> dict[str, Any]:
             } for r in rows]
 
         return {
+            "understatStatus": {
+                "available": understat_run["status"] == "success",
+                "checkedAt": understat_run["finished_at"],
+            } if understat_run else None,
             "mode": snapshot["mode"] if snapshot else "preview",
             "generatedAt": snapshot["published_at"] if snapshot else meta.get("generated_at", "noch nicht veröffentlicht"),
             "season": season,

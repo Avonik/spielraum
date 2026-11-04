@@ -41,7 +41,7 @@ test("preserves spacing around inline translations and original German copy", ()
 });
 
 test("all explicit translation calls have an English entry", async () => {
-  for (const path of ["../app/page.tsx", "../app/nerds/nerds-content.tsx"]) {
+  for (const path of ["../app/page.tsx", "../app/provider-banner.tsx", "../app/nerds/nerds-content.tsx"]) {
     const source = await readFile(new URL(path, import.meta.url), "utf8");
     const ast = ts.createSourceFile(path, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
     function visit(node) {
