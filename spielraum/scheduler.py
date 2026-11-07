@@ -11,6 +11,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from .config import Settings
+from .forecasting import next_pending_matchday
 from .publish import publish_file, record_results, sync_schedule
 from .storage import finish_run, initialize, start_run, transaction
 
@@ -32,7 +33,7 @@ def _command_for(job: str) -> list[str] | None:
     return parts
 
 
-def run_job(settings: Settings, job: str) -> str:
+def run_job(settings: Settings, job: str, *, matchday: int | None = None) -> str:
     started = _now()
     run_id = start_run(settings.database_path, job, started.isoformat())
     command = _command_for(job)
@@ -41,6 +42,8 @@ def run_job(settings: Settings, job: str) -> str:
     if not command:
         finish_run(settings.database_path, run_id, _now().isoformat(), "skipped", {"reason": "command not configured"})
         return "skipped"
+    if job == "model" and matchday is not None:
+        command = [*command, "--matchday", str(matchday)]
     try:
         completed = subprocess.run(
             command,
@@ -65,7 +68,7 @@ def run_job(settings: Settings, job: str) -> str:
             finish_run(settings.database_path, run_id, _now().isoformat(), "deferred", payload)
             return "deferred"
         if job == "model":
-            if payload.get("season_complete"):
+            if payload.get("season_complete") or payload.get("no_pending_matchday"):
                 finish_run(settings.database_path, run_id, _now().isoformat(), "success", payload)
                 return "success"
             snapshot_path = payload.get("snapshot_path")
@@ -127,8 +130,11 @@ def tick(settings: Settings) -> None:
     now = _now()
     local = now.astimezone(ZoneInfo(settings.timezone))
     understat_state = _state(settings, "understat")
+    recovered = False
     if understat_state is None or now - understat_state["attempt"] >= timedelta(minutes=30):
-        _mark_attempt(settings, "understat", run_job(settings, "understat"))
+        understat_status = run_job(settings, "understat")
+        recovered = understat_status == "success" and (understat_state is None or understat_state["status"] != "success")
+        _mark_attempt(settings, "understat", understat_status)
 
     match_window = (
         (local.weekday() == 4 and local.hour >= 18)
@@ -141,15 +147,19 @@ def tick(settings: Settings) -> None:
     if results_state is None or now - results_state["attempt"] >= timedelta(minutes=results_interval):
         _mark_attempt(settings, "results", run_job(settings, "results"))
 
-    week_start = (local - timedelta(days=local.weekday())).replace(
-        hour=settings.model_hour, minute=settings.model_minute, second=0, microsecond=0
-    )
     model_state = _state(settings, "model")
-    already_succeeded = model_state is not None and model_state["success"] is not None and model_state["success"].astimezone(ZoneInfo(settings.timezone)) >= week_start
     retry_due = model_state is None or now - model_state["attempt"] >= timedelta(hours=2)
-    in_retry_window = week_start <= local < week_start + timedelta(days=2)
-    if in_retry_window and not already_succeeded and retry_due:
-        _mark_attempt(settings, "model", run_job(settings, "model"))
+    if retry_due or recovered:
+        # A successful earlier round is committed before planning the next one.
+        # Failures/missing xG stop the queue, which is retried throughout the week.
+        for _ in range(34):
+            target = next_pending_matchday(settings, _now())
+            if target is None:
+                break
+            status = run_job(settings, "model", matchday=target)
+            _mark_attempt(settings, "model", status)
+            if status != "success" or next_pending_matchday(settings, _now()) == target:
+                break
 
 
 def main() -> None:

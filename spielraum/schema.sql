@@ -68,6 +68,46 @@ CREATE TABLE IF NOT EXISTS results (
     source TEXT NOT NULL
 );
 
+-- Missed fixtures use a separate ledger with the actual computation time.
+-- The original pre-kickoff prediction ledger and its trigger stay unchanged.
+CREATE TABLE IF NOT EXISTS reconstructed_predictions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    fixture_id TEXT NOT NULL REFERENCES fixtures(id),
+    snapshot_id TEXT NOT NULL REFERENCES published_snapshots(id),
+    model_version_id TEXT NOT NULL REFERENCES model_versions(id),
+    computed_at TEXT NOT NULL,
+    data_cutoff TEXT NOT NULL,
+    p_home REAL NOT NULL CHECK (p_home BETWEEN 0 AND 1),
+    p_draw REAL NOT NULL CHECK (p_draw BETWEEN 0 AND 1),
+    p_away REAL NOT NULL CHECK (p_away BETWEEN 0 AND 1),
+    CHECK (abs(p_home + p_draw + p_away - 1.0) < 0.00001),
+    UNIQUE (fixture_id, snapshot_id)
+);
+
+CREATE TRIGGER IF NOT EXISTS reconstruction_before_kickoff
+BEFORE INSERT ON reconstructed_predictions
+WHEN datetime(NEW.data_cutoff) >= datetime((SELECT kickoff_utc FROM fixtures WHERE id = NEW.fixture_id))
+BEGIN
+    SELECT RAISE(ABORT, 'training cutoff must precede kickoff');
+END;
+
+CREATE TRIGGER IF NOT EXISTS reconstructions_no_update
+BEFORE UPDATE ON reconstructed_predictions BEGIN
+    SELECT RAISE(ABORT, 'reconstructed predictions are immutable');
+END;
+
+CREATE TRIGGER IF NOT EXISTS reconstructions_no_delete
+BEFORE DELETE ON reconstructed_predictions BEGIN
+    SELECT RAISE(ABORT, 'reconstructed predictions are immutable');
+END;
+
+CREATE TRIGGER IF NOT EXISTS reconstructed_fixture_no_update
+BEFORE UPDATE OF kickoff_utc, home_team_id, away_team_id ON fixtures
+WHEN EXISTS (SELECT 1 FROM reconstructed_predictions WHERE fixture_id = OLD.id)
+BEGIN
+    SELECT RAISE(ABORT, 'published fixture identity is immutable');
+END;
+
 CREATE TABLE IF NOT EXISTS team_strengths (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     snapshot_id TEXT NOT NULL REFERENCES published_snapshots(id),
@@ -111,6 +151,7 @@ CREATE TABLE IF NOT EXISTS scheduler_state (
 
 CREATE INDEX IF NOT EXISTS idx_fixtures_round ON fixtures(season, matchday, kickoff_utc);
 CREATE INDEX IF NOT EXISTS idx_predictions_fixture_time ON predictions(fixture_id, published_at DESC);
+CREATE INDEX IF NOT EXISTS idx_reconstructions_fixture_time ON reconstructed_predictions(fixture_id, computed_at DESC);
 CREATE INDEX IF NOT EXISTS idx_strengths_season_team ON team_strengths(season, team_id, matchday);
 
 CREATE TRIGGER IF NOT EXISTS predictions_no_update

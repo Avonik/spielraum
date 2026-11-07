@@ -1,5 +1,6 @@
 // German copy is the source text, so existing editorial wording stays intact.
 export const english: Record<string, string> = {
+  "Nur vorherige Spieltage im Modell": "Only previous matchdays inform the model",
   "Understat-API derzeit nicht verfügbar.": "Understat API is currently unavailable.",
   "Neue xG-Daten fehlen vorübergehend. Wir zeigen weiterhin die zuletzt veröffentlichten Prognosen.": "New xG data is temporarily unavailable. We continue to show the last published forecasts.",
   "Quote": "Odds", "Im Fokus": "Featured", "Heim": "Home", "Auswärts": "Away",

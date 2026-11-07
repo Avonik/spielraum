@@ -55,6 +55,14 @@ def validate_snapshot(payload: dict[str, Any]) -> None:
             raise ValueError(f"invalid probabilities for fixture {fixture['id']}")
         if abs(sum(probabilities) - 1.0) >= 0.00001:
             raise ValueError(f"probabilities do not sum to one for fixture {fixture['id']}")
+        if datetime.fromisoformat(fixture["kickoff_utc"]) <= datetime.fromisoformat(payload["published_at"]):
+            config = model["config"]
+            cutoff = config.get("data_cutoff")
+            if config.get("training_matchday_max") != int(payload["matchday"]) - 1 or not cutoff:
+                raise ValueError("late forecasts require an explicit training boundary")
+            _validate_timestamp(cutoff, "model.config.data_cutoff")
+            if any(datetime.fromisoformat(cutoff) >= datetime.fromisoformat(game["kickoff_utc"]) for game in payload["fixtures"]):
+                raise ValueError("training cutoff must precede the entire target matchday")
 
 
 def publish_snapshot(database_path: str | Path, data_dir: str | Path, payload: dict[str, Any]) -> Path:
@@ -105,12 +113,20 @@ def publish_snapshot(database_path: str | Path, data_dir: str | Path, payload: d
                 identity = (payload["season"], int(payload["matchday"]), fixture["kickoff_utc"], team_ids[fixture["home"]], team_ids[fixture["away"]])
                 if tuple(stored) != identity:
                     raise ValueError(f"fixture identity changed after first publication: {fixture['id']}")
-                connection.execute(
-                    """INSERT INTO predictions
-                       (fixture_id, snapshot_id, model_version_id, published_at, p_home, p_draw, p_away)
-                       VALUES (?, ?, ?, ?, ?, ?, ?)""",
-                    (fixture["id"], snapshot_id, model["id"], payload["published_at"], *fixture["probabilities"]),
-                )
+                if datetime.fromisoformat(fixture["kickoff_utc"]) <= datetime.fromisoformat(payload["published_at"]):
+                    connection.execute(
+                        """INSERT INTO reconstructed_predictions
+                           (fixture_id, snapshot_id, model_version_id, computed_at, data_cutoff, p_home, p_draw, p_away)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                        (fixture["id"], snapshot_id, model["id"], payload["published_at"], model["config"]["data_cutoff"], *fixture["probabilities"]),
+                    )
+                else:
+                    connection.execute(
+                        """INSERT INTO predictions
+                           (fixture_id, snapshot_id, model_version_id, published_at, p_home, p_draw, p_away)
+                           VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                        (fixture["id"], snapshot_id, model["id"], payload["published_at"], *fixture["probabilities"]),
+                    )
             for strength in payload.get("strengths", []):
                 connection.execute(
                     """INSERT INTO team_strengths
@@ -197,7 +213,9 @@ def sync_schedule(
                 continue
             if tuple(stored) != identity:
                 has_prediction = connection.execute(
-                    "SELECT 1 FROM predictions WHERE fixture_id = ? LIMIT 1", (fixture["id"],)
+                    """SELECT 1 FROM predictions WHERE fixture_id = ?
+                       UNION ALL SELECT 1 FROM reconstructed_predictions WHERE fixture_id = ? LIMIT 1""",
+                    (fixture["id"], fixture["id"]),
                 ).fetchone()
                 if has_prediction:
                     continue

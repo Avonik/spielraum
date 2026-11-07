@@ -402,7 +402,7 @@ export default function Home() {
           <h1>{t("Fußball im Bauch.")}<br /><em>{t("Daten im Kopf.")}</em></h1>
           <p>{t("Dein Spieltag in Wahrscheinlichkeiten. Entdecke faire Quoten und verfolge die Form deines Teams.")}</p>
           <a className="hero-link" href="#spieltag">{t("Zu den Spieltagsprognosen ")}<span aria-hidden="true">↗</span></a>
-          <div className="hero__meta"><span><b>1 X 2?</b>{t(" Alle Prognosen vor Anpfiff")}</span><span><b>{t("50.000+")}</b>{t(" Saison-Simulationen")}</span><span><b>{t("jeden Spieltag neu")}</b>{t("ein Modell, das mitwächst")}</span></div>
+          <div className="hero__meta"><span><b>1 X 2?</b>{t(" Nur vorherige Spieltage im Modell")}</span><span><b>{t("50.000+")}</b>{t(" Saison-Simulationen")}</span><span><b>{t("jeden Spieltag neu")}</b>{t("ein Modell, das mitwächst")}</span></div>
         </div>
         <aside className="hero-forecast" aria-label={t("Spiel im Fokus")}>
           <div className="hero-forecast__heading"><span>{t("Spiel im Fokus")}</span><span>{data.mode === "preview" ? t("Beispieldaten") : t("Modellprognose")}</span></div>

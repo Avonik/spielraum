@@ -15,6 +15,7 @@ import pandas as pd
 
 from spielraum.artifacts import write_json_atomic
 from spielraum.config import Settings
+from spielraum.forecasting import matchday_view, next_pending_matchday
 from spielraum.providers.openligadb import (
     OpenLigaMatch,
     fetch_season,
@@ -303,10 +304,11 @@ def build_snapshot(
     n_iter: int,
     burnin: int,
     thin: int,
+    target_matchday: int | None = None,
 ) -> tuple[dict[str, Any] | None, dict[str, Any]]:
     if len(matches) != 306 or {match.matchday for match in matches} != set(range(1, 35)):
         raise ValueError(f"OpenLigaDB season is incomplete: {len(matches)} matches")
-    next_matchday = next_unfinished_matchday(matches)
+    next_matchday = target_matchday if target_matchday is not None else next_unfinished_matchday(matches)
     if next_matchday is None:
         return None, {
             "matchday_complete": True,
@@ -315,7 +317,12 @@ def build_snapshot(
             "season_complete": True,
             "reason": "season complete",
         }
+    # The boundary also applies to already-finished matches in the target round
+    # and to the final-table simulation, not just the xG training frame.
+    matches, data_cutoff = matchday_view(matches, next_matchday)
     matchday_complete = all(match.finished for match in matches if match.matchday < next_matchday)
+    if not matchday_complete:
+        return None, {"matchday_complete": False, "xg_complete": False, "reason": "previous matchday incomplete"}
     prefix, missing_xg = _current_xg(matches)
     if not matchday_complete or missing_xg:
         return None, {
@@ -384,7 +391,7 @@ def build_snapshot(
 
     created = datetime.now(UTC)
     stamp = created.strftime("%Y%m%dT%H%M%SZ")
-    model_id = f"v2.1-live-{stamp}"
+    model_id = f"v2.1-md{next_matchday:02d}-{stamp}"
     snapshot = {
         "snapshot_id": f"2627-md{next_matchday:02d}-{stamp}",
         "season": SEASON,
@@ -397,6 +404,9 @@ def build_snapshot(
             "git_sha": _git_sha(),
             "config": {
                 "model": "dual V2",
+                "training_matchday_max": next_matchday - 1,
+                "data_cutoff": data_cutoff.isoformat(),
+                "training_fixture_ids": sorted(match.fixture_id for match in matches if match.finished),
                 "tau": DEFAULT_TAU,
                 "gamma": DEFAULT_GAMMA,
                 "epsilon": DEFAULT_EPSILON,
@@ -437,6 +447,7 @@ def main() -> None:
         pass
     parser = argparse.ArgumentParser(description="Create a production Spielraum V2 snapshot")
     parser.add_argument("--season", type=int, default=2026)
+    parser.add_argument("--matchday", type=int, choices=range(1, 35))
     parser.add_argument("--simulations", type=int, default=int(os.environ.get("SPIELRAUM_SIMULATIONS", "50000")))
     parser.add_argument("--n-iter", type=int, default=int(os.environ.get("SPIELRAUM_MCMC_ITER", "5000")))
     parser.add_argument("--burnin", type=int, default=int(os.environ.get("SPIELRAUM_MCMC_BURNIN", "1000")))
@@ -447,6 +458,10 @@ def main() -> None:
     settings = Settings.from_env()
     settings.ensure_directories()
     matches = fetch_season(args.season)
+    target_matchday = args.matchday or next_pending_matchday(settings, datetime.now(UTC))
+    if target_matchday is None:
+        print(json.dumps({"no_pending_matchday": True, "matchday_complete": True, "xg_complete": True}))
+        return
     snapshot, status = build_snapshot(
         matches,
         settings=settings,
@@ -454,6 +469,7 @@ def main() -> None:
         n_iter=args.n_iter,
         burnin=args.burnin,
         thin=args.thin,
+        target_matchday=target_matchday,
     )
     if snapshot is not None:
         snapshot_path = settings.data_dir / "inbox" / f"{snapshot['snapshot_id']}.json"

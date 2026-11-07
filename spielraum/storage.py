@@ -94,13 +94,17 @@ def read_dashboard(path: str | Path) -> dict[str, Any]:
 
         fixtures = [] if snapshot is None else connection.execute(
             f"""
-            SELECT f.id, f.kickoff_utc, {_TEAM_SELECT}, p.p_home, p.p_draw, p.p_away
+            SELECT f.id, f.kickoff_utc, {_TEAM_SELECT},
+                   COALESCE(p.p_home, rp.p_home) AS p_home,
+                   COALESCE(p.p_draw, rp.p_draw) AS p_draw,
+                   COALESCE(p.p_away, rp.p_away) AS p_away
             FROM fixtures f {_TEAM_JOIN}
-            JOIN predictions p ON p.fixture_id = f.id AND p.snapshot_id = ?
+            LEFT JOIN predictions p ON p.fixture_id = f.id AND p.snapshot_id = ?
+            LEFT JOIN reconstructed_predictions rp ON rp.fixture_id = f.id AND rp.snapshot_id = ?
             WHERE f.season = ? AND f.matchday = ?
             ORDER BY f.kickoff_utc, f.id
             """,
-            (snapshot["id"], season, matchday),
+            (snapshot["id"], snapshot["id"], season, matchday),
         ).fetchall()
         fixture_payload = [
             {
@@ -117,17 +121,28 @@ def read_dashboard(path: str | Path) -> dict[str, Any]:
         include_demo = snapshot is not None and snapshot["mode"] == "preview"
         history = connection.execute(
             f"""
+            WITH candidates AS (
+                SELECT p.fixture_id, p.snapshot_id, p.published_at, p.p_home, p.p_draw, p.p_away, 0 AS priority
+                FROM predictions p
+                JOIN fixtures f ON f.id = p.fixture_id
+                JOIN published_snapshots ps ON ps.id = p.snapshot_id
+                WHERE datetime(p.published_at) < datetime(f.kickoff_utc)
+                  AND (? = 1 OR (ps.mode = 'live' AND ps.manifest_sha256 IS NOT NULL))
+                UNION ALL
+                SELECT rp.fixture_id, rp.snapshot_id, rp.computed_at, rp.p_home, rp.p_draw, rp.p_away, 1
+                FROM reconstructed_predictions rp
+                JOIN published_snapshots ps ON ps.id = rp.snapshot_id
+                WHERE ps.mode = 'live' AND ps.manifest_sha256 IS NOT NULL
+            ), ranked AS (
+                SELECT *, ROW_NUMBER() OVER (
+                    PARTITION BY fixture_id ORDER BY priority, published_at DESC
+                ) AS choice FROM candidates
+            )
             SELECT f.id, f.season, f.matchday, f.kickoff_utc, {_TEAM_SELECT},
                    p.p_home, p.p_draw, p.p_away, r.home_goals, r.away_goals
             FROM fixtures f {_TEAM_JOIN}
             JOIN results r ON r.fixture_id = f.id AND r.status = 'finished'
-            JOIN predictions p ON p.id = (
-                SELECT p2.id FROM predictions p2
-                JOIN published_snapshots ps2 ON ps2.id = p2.snapshot_id
-                WHERE p2.fixture_id = f.id AND datetime(p2.published_at) < datetime(f.kickoff_utc)
-                  AND (? = 1 OR (ps2.mode = 'live' AND ps2.manifest_sha256 IS NOT NULL))
-                ORDER BY p2.published_at DESC LIMIT 1
-            )
+            JOIN ranked p ON p.fixture_id = f.id AND p.choice = 1
             ORDER BY f.kickoff_utc DESC LIMIT 60
             """,
             (1 if include_demo else 0,),
