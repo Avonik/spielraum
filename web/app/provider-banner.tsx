@@ -8,7 +8,7 @@ export function ProviderBanner({ status }: { status?: { available: boolean } | n
     {status?.available === false && <aside className="provider-banner">
       <span className="provider-banner__icon" aria-hidden="true">!</span>
       <p><strong>{t("Understat-API derzeit nicht verfügbar.")}</strong>{" "}
-        {t("Neue xG-Daten fehlen vorübergehend. Wir zeigen weiterhin die zuletzt veröffentlichten Prognosen.")}</p>
+        {t("Der automatische xG-Abruf ist unterbrochen. Die zuletzt berechneten Prognosen bleiben verfügbar.")}</p>
     </aside>}
   </div>;
 }

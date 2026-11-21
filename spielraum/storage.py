@@ -143,7 +143,7 @@ def read_dashboard(path: str | Path) -> dict[str, Any]:
             FROM fixtures f {_TEAM_JOIN}
             JOIN results r ON r.fixture_id = f.id AND r.status = 'finished'
             JOIN ranked p ON p.fixture_id = f.id AND p.choice = 1
-            ORDER BY f.kickoff_utc DESC LIMIT 60
+            ORDER BY f.kickoff_utc DESC LIMIT 306
             """,
             (1 if include_demo else 0,),
         ).fetchall()

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import shutil
@@ -23,6 +24,7 @@ from spielraum.providers.openligadb import (
     team_payload,
 )
 from spielraum.simulation import simulate_placements
+from spielraum.verified_xg import read_verified_xg
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -73,22 +75,32 @@ def _schedule_frame(matches: list[OpenLigaMatch]) -> pd.DataFrame:
     } for match in matches])
 
 
-def _current_xg(matches: list[OpenLigaMatch]) -> tuple[pd.DataFrame, list[str]]:
+def _current_xg(matches: list[OpenLigaMatch], settings: Settings | None = None) -> tuple[pd.DataFrame, list[str]]:
     finished = [match for match in matches if match.finished]
-    columns = ["Date", "HomeTeam", "AwayTeam", "FTHG", "FTAG", "FTR", "Season", "xG_home", "xG_away", "has_xg", "xg_source"]
+    columns = ["Date", "HomeTeam", "AwayTeam", "FTHG", "FTAG", "FTR", "Season", "xG_home", "xG_away", "has_xg", "xg_source", "fixture_id", "xg_source_url", "xg_source_sha256"]
     if not finished:
         return pd.DataFrame(columns=columns), []
 
-    understat = fetch_understat_xg([2026], verbose=True)
-    lookup = {
-        (str(row.home_team), str(row.away_team)): (float(row.home_xg), float(row.away_xg))
-        for row in understat.itertuples()
-    }
+    verified = read_verified_xg(settings.data_dir, matches) if settings is not None else {}
+    lookup = {}
+    if len(verified) < len(finished):
+        try:
+            understat = fetch_understat_xg([2026], verbose=True)
+            lookup = {
+                (str(row.home_team), str(row.away_team)): (float(row.home_xg), float(row.away_xg))
+                for row in understat.itertuples()
+            }
+        except Exception:
+            if not verified:
+                raise
+            # A partial researched set never makes a round complete: missing
+            # fixtures below defer the run, rather than substituting estimates.
     rows = []
     missing = []
     for match in finished:
         expected = (_FD_TO_US.get(match.home_fd), _FD_TO_US.get(match.away_fd))
-        values = lookup.get(expected)
+        record = verified.get(match.fixture_id)
+        values = (float(record["home_xg"]), float(record["away_xg"])) if record else lookup.get(expected)
         if values is None:
             missing.append(match.fixture_id)
             continue
@@ -104,7 +116,10 @@ def _current_xg(matches: list[OpenLigaMatch]) -> tuple[pd.DataFrame, list[str]]:
             "xG_home": values[0],
             "xG_away": values[1],
             "has_xg": True,
-            "xg_source": "real",
+            "xg_source": record["source"] if record else "Understat",
+            "fixture_id": match.fixture_id,
+            "xg_source_url": record["source_url"] if record else "https://understat.com/league/Bundesliga/2026",
+            "xg_source_sha256": record["source_sha256"] if record else None,
         })
     return pd.DataFrame(rows, columns=columns).sort_values("Date").reset_index(drop=True), missing
 
@@ -323,7 +338,7 @@ def build_snapshot(
     matchday_complete = all(match.finished for match in matches if match.matchday < next_matchday)
     if not matchday_complete:
         return None, {"matchday_complete": False, "xg_complete": False, "reason": "previous matchday incomplete"}
-    prefix, missing_xg = _current_xg(matches)
+    prefix, missing_xg = _current_xg(matches, settings)
     if not matchday_complete or missing_xg:
         return None, {
             "matchday_complete": matchday_complete,
@@ -392,6 +407,10 @@ def build_snapshot(
     created = datetime.now(UTC)
     stamp = created.strftime("%Y%m%dT%H%M%SZ")
     model_id = f"v2.1-md{next_matchday:02d}-{stamp}"
+    xg_inputs = [{
+        "fixture_id": row.fixture_id, "home_xg": float(row.xG_home), "away_xg": float(row.xG_away),
+        "source": row.xg_source, "source_url": row.xg_source_url, "source_sha256": row.xg_source_sha256,
+    } for row in prefix.itertuples()]
     snapshot = {
         "snapshot_id": f"2627-md{next_matchday:02d}-{stamp}",
         "season": SEASON,
@@ -412,7 +431,9 @@ def build_snapshot(
                 "epsilon": DEFAULT_EPSILON,
                 "phi": DEFAULT_PHI,
                 "continuous_xg": True,
-                "xg_source": "Understat via soccerdata",
+                "xg_source": " + ".join(sorted(set(prefix["xg_source"]))) if not prefix.empty else "Understat",
+                "xg_inputs": xg_inputs,
+                "xg_inputs_sha256": hashlib.sha256(json.dumps(xg_inputs, sort_keys=True).encode()).hexdigest(),
                 "fixtures_results_source": "OpenLigaDB ODbL",
                 "market_values": {
                     "season": SEASON,

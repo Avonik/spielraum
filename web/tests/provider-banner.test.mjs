@@ -26,10 +26,10 @@ test("shows the outage notice in German and English", async () => {
   const de = await render({ available: false });
   assert.match(de, /role="status"/);
   assert.match(de, /Understat-API derzeit nicht verfügbar/);
-  assert.match(de, /zuletzt veröffentlichten Prognosen/);
+  assert.match(de, /zuletzt berechneten Prognosen/);
   const en = await render({ available: false }, "en");
   assert.match(en, /Understat API is currently unavailable/);
-  assert.match(en, /last published forecasts/);
+  assert.match(en, /latest calculated forecasts/);
 });
 
 test("hides the notice after recovery and before the first check", async () => {

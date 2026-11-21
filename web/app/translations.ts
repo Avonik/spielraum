@@ -2,7 +2,7 @@
 export const english: Record<string, string> = {
   "Nur vorherige Spieltage im Modell": "Only previous matchdays inform the model",
   "Understat-API derzeit nicht verfügbar.": "Understat API is currently unavailable.",
-  "Neue xG-Daten fehlen vorübergehend. Wir zeigen weiterhin die zuletzt veröffentlichten Prognosen.": "New xG data is temporarily unavailable. We continue to show the last published forecasts.",
+  "Der automatische xG-Abruf ist unterbrochen. Die zuletzt berechneten Prognosen bleiben verfügbar.": "Automatic xG updates are interrupted. The latest calculated forecasts remain available.",
   "Quote": "Odds", "Im Fokus": "Featured", "Heim": "Home", "Auswärts": "Away",
   "1 · Heim": "1 · Home", "X · Remis": "X · Draw", "2 · Gast": "2 · Away",
   "Prognose": "Prediction", "Noch keine Werte vorhanden.": "No data available yet.",
