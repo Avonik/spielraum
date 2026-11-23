@@ -42,6 +42,8 @@ REPORTS = {
     "2627-10-bmg-bvb": "de/bundesliga/news/borussia-moenchengladbach-borussia-dortmund-spieltag-10-spielbericht-highlights-40071",
     "2627-10-elv-scf": "de/bundesliga/news/sv-elversberg-sport-club-freiburg-spieltag-10-spielbericht-highlights-40076",
     "2627-10-s04-vfb": "en/bundesliga/news/schalke-vfb-stuttgart-match-report-highlights-matchday-10-40089",
+    "2627-10-fca-m05": "de/bundesliga/news/fc-augsburg-1-fsv-mainz-05-spieltag-10-spielbericht-highlights-40099",
+    "2627-10-svw-hsv": "de/bundesliga/news/sv-werder-bremen-hamburger-sv-spieltag-10-spielbericht-highlights-40102",
 }
 
 
